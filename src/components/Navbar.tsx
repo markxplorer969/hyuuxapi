@@ -4,15 +4,17 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Moon, Sun } from 'lucide-react';
+import { Menu, X, Moon, Sun, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useTheme } from 'next-themes';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
   { name: 'Home', href: '/' },
   { name: 'Status', href: '/status' },
   { name: 'Docs', href: '/docs' },
+  { name: 'Profile', href: '/profile' },
 ];
 
 export default function Navbar() {
@@ -21,6 +23,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -85,6 +88,35 @@ export default function Navbar() {
                 ))}
               </div>
 
+              {/* User Profile */}
+              {user ? (
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-lg">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {user.displayName || user.email}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => window.location.href = '/profile'}
+                    className="h-9 w-9"
+                  >
+                    <User className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => window.location.href = '/login'}
+                  className="h-9 w-9"
+                >
+                  <User className="h-4 w-4" />
+                </Button>
+              )}
+
               {/* Theme Toggle */}
               <Button
                 variant="ghost"
@@ -100,6 +132,35 @@ export default function Navbar() {
 
             {/* Mobile Menu */}
             <div className="md:hidden flex items-center space-x-2">
+              {/* User Profile */}
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-lg">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {user.displayName || user.email}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => window.location.href = '/profile'}
+                    className="h-9 w-9"
+                  >
+                    <User className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => window.location.href = '/login'}
+                  className="h-9 w-9"
+                >
+                  <User className="h-4 w-4" />
+                </Button>
+              )}
+
               {/* Theme Toggle */}
               <Button
                 variant="ghost"
@@ -128,13 +189,35 @@ export default function Navbar() {
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                           pathname === item.href
-                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
                         }`}
                       >
                         {item.name}
                       </Link>
                     ))}
+                    
+                    {/* User Profile */}
+                    {user ? (
+                      <div className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-lg">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium text-muted-foreground">
+                          {user.displayName || user.email}
+                        </span>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          window.location.href = '/login';
+                        }}
+                        className="w-full justify-start"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Sign In
+                      </Button>
+                    )}
                   </div>
                 </SheetContent>
               </Sheet>

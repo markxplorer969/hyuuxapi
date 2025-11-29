@@ -26,52 +26,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (initializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
   if (!user) {
-    return null; // Will redirect
-  }
-
-  return <>{children}</>;
-};
-
-interface PublicRouteProps {
-  children: ReactNode;
-  fallbackPath?: string;
-}
-
-export const PublicRoute: React.FC<PublicRouteProps> = ({ 
-  children, 
-  fallbackPath = '/docs' 
-}) => {
-  const { user, initializing } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!initializing && user) {
-      router.push(fallbackPath);
-    }
-  }, [user, initializing, router, fallbackPath]);
-
-  if (initializing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (user) {
     return null; // Will redirect
   }
 

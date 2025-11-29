@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Activity, Cpu, HardDrive, Zap, Clock, Server, Database, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 interface StatusData {
@@ -99,7 +98,6 @@ export default function Status() {
   const [healthData, setHealthData] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -136,15 +134,15 @@ export default function Status() {
       case 'healthy':
       case 'online':
       case 'operational':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5 text-green-600" />;
       case 'warning':
       case 'degraded':
-        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+        return <AlertTriangle className="w-5 h-5 text-yellow-600" />;
       case 'error':
       case 'offline':
-        return <XCircle className="w-5 h-5 text-red-500" />;
+        return <XCircle className="w-5 h-5 text-red-600" />;
       default:
-        return <Activity className="w-5 h-5 text-gray-500" />;
+        return <Activity className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
@@ -160,45 +158,41 @@ export default function Status() {
 
   if (loading) {
     return (
-      <>
-        <Navbar isDarkMode={isDarkMode} toggleTheme={() => setIsDarkMode(!isDarkMode)} />
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center pt-16">
+      <ProtectedRoute>
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center pt-16">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading status...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading status...</p>
           </div>
         </div>
-      </>
+      </ProtectedRoute>
     );
   }
 
   if (error) {
     return (
-      <>
-        <Navbar isDarkMode={isDarkMode} toggleTheme={() => setIsDarkMode(!isDarkMode)} />
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center pt-16">
+      <ProtectedRoute>
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center pt-16">
           <div className="text-center">
-            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <p className="text-red-600 dark:text-red-400 mb-2">Error loading status</p>
-            <p className="text-gray-600 dark:text-gray-400">{error}</p>
+            <XCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+            <p className="text-destructive mb-2">Error loading status</p>
+            <p className="text-muted-foreground">{error}</p>
           </div>
         </div>
-      </>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <>
-      <Navbar isDarkMode={isDarkMode} toggleTheme={() => setIsDarkMode(!isDarkMode)} />
-      
-      <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-gray-100' : 'bg-gray-50 text-gray-900'} pt-16 md:pt-20`}>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background text-foreground pt-16 md:pt-20">
         {/* Header */}
-        <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} border-b`}>
+        <div className="bg-card border-b">
           <div className="container mx-auto px-4 py-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">System Status</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">Real-time monitoring and performance metrics</p>
+                <h1 className="text-3xl font-bold">System Status</h1>
+                <p className="text-muted-foreground mt-1">Real-time monitoring and performance metrics</p>
               </div>
               <div className="flex items-center gap-2">
                 {getStatusIcon(healthData?.result.overall.status || 'unknown')}
@@ -223,25 +217,25 @@ export default function Status() {
                   <div className="text-3xl font-bold text-green-600 mb-2">
                     {healthData?.result.overall.status || 'Unknown'}
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">System Status</p>
+                  <p className="text-sm text-muted-foreground">System Status</p>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-600 mb-2">
                     {healthData?.result.overall.responseTime || 0}ms
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Response Time</p>
+                  <p className="text-sm text-muted-foreground">Response Time</p>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-600 mb-2">
                     {healthData?.result.system.uptime.human || '0s'}
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Uptime</p>
+                  <p className="text-sm text-muted-foreground">Uptime</p>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-orange-600 mb-2">
                     {statusData?.result.api.totalEndpoints || 0}
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">API Endpoints</p>
+                  <p className="text-sm text-muted-foreground">API Endpoints</p>
                 </div>
               </div>
             </CardContent>
@@ -258,13 +252,13 @@ export default function Status() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {healthData?.result.services && Object.entries(healthData.result.services).map(([service, data]) => (
-                  <div key={service} className={`flex items-center justify-between p-3 ${isDarkMode ? 'bg-slate-800' : 'bg-gray-50'} rounded-lg`}>
+                  <div key={service} className="flex items-center justify-between p-3 bg-secondary rounded-lg">
                     <div className="flex items-center gap-3">
                       {getStatusIcon(data.status)}
                       <span className="font-medium capitalize">{service}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="text-sm text-muted-foreground">
                         {data.responseTime}ms
                       </span>
                       {getStatusBadge(data.status)}
@@ -283,22 +277,22 @@ export default function Status() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Node.js Version</span>
+                  <span className="text-muted-foreground">Node.js Version</span>
                   <span className="font-medium">{healthData?.result.system.nodeVersion}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Platform</span>
+                  <span className="text-muted-foreground">Platform</span>
                   <span className="font-medium">{healthData?.result.system.platform} {healthData?.result.system.arch}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Environment</span>
+                  <span className="text-muted-foreground">Environment</span>
                   <span className="font-medium">{healthData?.result.system.environment}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Process ID</span>
+                  <span className="text-muted-foreground">Process ID</span>
                   <span className="font-medium">{healthData?.result.system.pid}</span>
                 </div>
               </CardContent>
@@ -318,31 +312,31 @@ export default function Status() {
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between mb-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Heap Used</span>
+                      <span className="text-sm text-muted-foreground">Heap Used</span>
                       <span className="text-sm font-medium">{statusData?.result.performance.memory.used} MB</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-secondary rounded-full h-2">
                       <div 
-                        className="bg-blue-600 h-2 rounded-full" 
+                        className="bg-primary h-2 rounded-full" 
                         style={{ width: `${((statusData?.result.performance.memory.used || 0) / (statusData?.result.performance.memory.total || 1)) * 100}%` }}
                       ></div>
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Heap Total</span>
+                      <span className="text-sm text-muted-foreground">Heap Total</span>
                       <span className="text-sm font-medium">{statusData?.result.performance.memory.total} MB</span>
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">External</span>
+                      <span className="text-sm text-muted-foreground">External</span>
                       <span className="text-sm font-medium">{statusData?.result.performance.memory.external} MB</span>
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">RSS</span>
+                      <span className="text-sm text-muted-foreground">RSS</span>
                       <span className="text-sm font-medium">{statusData?.result.performance.memory.rss} MB</span>
                     </div>
                   </div>
@@ -360,21 +354,21 @@ export default function Status() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className={`text-center p-3 ${isDarkMode ? 'bg-slate-800' : 'bg-gray-50'} rounded-lg`}>
+                    <div className="text-center p-3 bg-secondary rounded-lg">
                       <div className="text-2xl font-bold text-green-600">{statusData?.result.performance.cache.hits}</div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Cache Hits</p>
+                      <p className="text-sm text-muted-foreground">Cache Hits</p>
                     </div>
-                    <div className={`text-center p-3 ${isDarkMode ? 'bg-slate-800' : 'bg-gray-50'} rounded-lg`}>
+                    <div className="text-center p-3 bg-secondary rounded-lg">
                       <div className="text-2xl font-bold text-red-600">{statusData?.result.performance.cache.misses}</div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Cache Misses</p>
+                      <p className="text-sm text-muted-foreground">Cache Misses</p>
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Hit Ratio</span>
+                      <span className="text-sm text-muted-foreground">Hit Ratio</span>
                       <span className="text-sm font-medium">{Math.round((statusData?.result.performance.cache.hits_ratio || 0) * 100)}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-secondary rounded-full h-2">
                       <div 
                         className="bg-green-600 h-2 rounded-full" 
                         style={{ width: `${(statusData?.result.performance.cache.hits_ratio || 0) * 100}%` }}
@@ -382,13 +376,13 @@ export default function Status() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className={`text-center p-3 ${isDarkMode ? 'bg-slate-800' : 'bg-gray-50'} rounded-lg`}>
+                    <div className="text-center p-3 bg-secondary rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">{statusData?.result.performance.cache.keys}</div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Keys Stored</p>
+                      <p className="text-sm text-muted-foreground">Keys Stored</p>
                     </div>
-                    <div className={`text-center p-3 ${isDarkMode ? 'bg-slate-800' : 'bg-gray-50'} rounded-lg`}>
+                    <div className="text-center p-3 bg-secondary rounded-lg">
                       <div className="text-2xl font-bold text-purple-600">{statusData?.result.performance.cache.sets}</div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Total Sets</p>
+                      <p className="text-sm text-muted-foreground">Total Sets</p>
                     </div>
                   </div>
                 </div>
@@ -397,12 +391,12 @@ export default function Status() {
           </div>
 
           {/* Last Updated */}
-          <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+          <div className="mt-8 text-center text-sm text-muted-foreground">
             <p>Last updated: {new Date(healthData?.result.overall.timestamp || Date.now()).toLocaleString()}</p>
             <p className="mt-1">Auto-refresh every 30 seconds</p>
           </div>
         </div>
       </div>
-    </>
+    </ProtectedRoute>
   );
 }

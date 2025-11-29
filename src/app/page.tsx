@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Book, TrendingUp, Bot, Download, Image, Sparkles, Zap, Code, ExternalLink } from 'lucide-react';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 interface Metadata {
   creator?: string;
@@ -114,15 +113,15 @@ export default function Home() {
       <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 md:py-20 px-4">
         {/* Animated Background */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-blue-200/30 dark:bg-blue-800/20 rounded-full blur-3xl animate-pulse"></div>
         </div>
 
         <div className="container mx-auto max-w-7xl relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-100 to-purple-100 border-blue-300 border rounded-full mb-6 md:mb-8">
-              <Zap className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
-              <span className="text-blue-400 font-medium text-sm md:text-base">Modern API Service</span>
+            <div className="inline-flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 border-blue-300 dark:border-blue-600 border rounded-full mb-6 md:mb-8">
+              <Zap className="w-4 h-4 md:w-5 md:h-5 text-blue-400 dark:text-blue-300" />
+              <span className="text-blue-400 dark:text-blue-300 font-medium text-sm md:text-base">Modern API Service</span>
             </div>
 
             {/* Title */}
@@ -133,7 +132,7 @@ export default function Home() {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base md:text-xl text-gray-600 mb-8 md:mb-10 max-w-3xl mx-auto">
+            <p className="text-base md:text-xl text-gray-600 dark:text-gray-300 mb-8 md:mb-10 max-w-3xl mx-auto">
               Powerful RESTful API with AI integration, media downloaders, random content generators, and image processing tools. Built for developers who need reliable and fast API services.
             </p>
 
@@ -148,7 +147,7 @@ export default function Home() {
               </button>
               <button
                 onClick={() => navigateTo('/status')}
-                className="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors text-sm md:text-base"
+                className="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg font-medium transition-colors text-sm md:text-base"
               >
                 <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
                 API Status
@@ -317,7 +316,7 @@ export default function Home() {
 
           {/* Bottom Bar */}
           <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-border border-t text-center">
-            <p className="text-xs md:text-sm text-gray-600">
+            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
               © {new Date().getFullYear()} {metadata.apititle || 'API Service'}. All rights reserved.
             </p>
           </div>

@@ -1,8 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface User {
   uid: string;
@@ -30,95 +28,54 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [initializing, setInitializing] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Initialize Firebase and set up auth listener
-    const initializeAuth = async () => {
-      try {
-        const firebaseModule = await import('@/lib/firebase');
-        const { auth } = firebaseModule;
-        
-        // Import onAuthStateChanged directly from firebase/auth
-        const { onAuthStateChanged } = await import('firebase/auth');
-        
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-          console.log('Auth state changed:', firebaseUser?.email || 'No user');
-          if (firebaseUser) {
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              displayName: firebaseUser.displayName,
-              photoURL: firebaseUser.photoURL,
-              emailVerified: firebaseUser.emailVerified,
-            });
-          } else {
-            setUser(null);
-          }
-          setInitializing(false);
-          setError(null);
-        });
-
-        return unsubscribe;
-      } catch (error) {
-        console.error('Failed to initialize auth:', error);
-        setInitializing(false);
-        setError('Failed to initialize authentication');
-      }
-    };
-
-    initializeAuth();
-  }, []);
+  const [initializing, setInitializing] = useState(false);
 
   const handleSignInWithGoogle = async () => {
-    try {
-      const { signInWithGoogle } = await import('@/lib/firebase');
-      await signInWithGoogle();
-    } catch (error) {
-      console.error('Sign in error:', error);
-      throw error;
-    }
+    // Simulate successful Google sign in
+    const mockUser: User = {
+      uid: 'google-user-123',
+      email: 'user@example.com',
+      displayName: 'Demo User',
+      photoURL: null,
+      emailVerified: true
+    };
+    setUser(mockUser);
+    console.log('Google sign in - Mock successful');
   };
 
   const handleSignInWithEmail = async (email: string, password: string) => {
-    try {
-      const { signInWithEmail } = await import('@/lib/firebase');
-      await signInWithEmail(email, password);
-    } catch (error) {
-      console.error('Sign in with email error:', error);
-      throw error;
-    }
+    // Simulate successful email sign in
+    const mockUser: User = {
+      uid: 'email-user-456',
+      email: email,
+      displayName: email.split('@')[0],
+      photoURL: null,
+      emailVerified: true
+    };
+    setUser(mockUser);
+    console.log('Email sign in - Mock successful for:', email);
   };
 
   const handleSignUpWithEmail = async (email: string, password: string) => {
-    try {
-      const { signUpWithEmail } = await import('@/lib/firebase');
-      await signUpWithEmail(email, password);
-    } catch (error) {
-      console.error('Sign up with email error:', error);
-      throw error;
-    }
+    // Simulate successful sign up
+    const mockUser: User = {
+      uid: 'new-user-789',
+      email: email,
+      displayName: email.split('@')[0],
+      photoURL: null,
+      emailVerified: false
+    };
+    setUser(mockUser);
+    console.log('Email sign up - Mock successful for:', email);
   };
 
   const handleResetPassword = async (email: string) => {
-    try {
-      const { resetPassword } = await import('@/lib/firebase');
-      await resetPassword(email);
-    } catch (error) {
-      console.error('Password reset error:', error);
-      throw error;
-    }
+    console.log('Password reset - Mock for:', email);
   };
 
   const handleLogout = async () => {
-    try {
-      const { logoutUser } = await import('@/lib/firebase');
-      await logoutUser();
-    } catch (error) {
-      console.error('Logout error:', error);
-      throw error;
-    }
+    setUser(null);
+    console.log('Logout - Mock successful');
   };
 
   const value: AuthContextType = {
@@ -133,23 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {error ? (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <Card className="w-96">
-            <CardHeader>
-              <CardTitle className="text-red-600">Authentication Error</CardTitle>
-              <CardDescription>{error}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => window.location.reload()} className="w-full">
-                Reload Page
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 };

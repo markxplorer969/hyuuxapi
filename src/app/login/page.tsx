@@ -90,7 +90,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back Button */}
         <Button
@@ -103,7 +103,7 @@ export default function LoginPage() {
         </Button>
 
         {/* Login Card */}
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+        <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-6">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4">
               <Lock className="w-8 h-8 text-white" />
@@ -111,7 +111,7 @@ export default function LoginPage() {
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {showResetPassword ? 'Reset Password' : isSignUp ? 'Create Account' : 'Welcome Back'}
             </CardTitle>
-            <CardDescription className="text-gray-600">
+            <CardDescription className="text-muted-foreground">
               {showResetPassword 
                 ? 'Enter your email to reset your password'
                 : isSignUp 
@@ -146,8 +146,8 @@ export default function LoginPage() {
 
             <div className="relative">
               <Separator className="my-4" />
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-slate-800 px-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400">OR</span>
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2">
+                <span className="text-xs text-muted-foreground">OR</span>
               </div>
             </div>
 
@@ -279,7 +279,7 @@ export default function LoginPage() {
                 {!isSignUp && (
                   <Button 
                     variant="link" 
-                    className="p-0 h-auto text-sm text-gray-600 hover:text-gray-700"
+                    className="p-0 h-auto text-sm text-muted-foreground hover:text-foreground"
                     onClick={() => {
                       setShowResetPassword(true);
                       setError('');
@@ -295,7 +295,7 @@ export default function LoginPage() {
 
         {/* Demo Notice */}
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Choose your preferred sign-in method
           </p>
         </div>

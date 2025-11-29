@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Copy, Check, ExternalLink, Book, Code, Zap, Download, Image, Bot, Sparkles } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 interface Endpoint {
@@ -33,7 +32,6 @@ export default function Docs() {
   const [metadata, setMetadata] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [copiedEndpoint, setCopiedEndpoint] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,14 +81,14 @@ export default function Docs() {
       case 'DELETE':
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        return 'bg-secondary text-secondary-foreground';
     }
   };
 
   const getStatusColor = (status: string) => {
     return status.toLowerCase() === 'active' 
       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-      : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+      : 'bg-secondary text-secondary-foreground';
   };
 
   const getCategoryIcon = (category: string) => {
@@ -112,45 +110,41 @@ export default function Docs() {
 
   if (loading) {
     return (
-      <>
-        <Navbar isDarkMode={isDarkMode} toggleTheme={() => setIsDarkMode(!isDarkMode)} />
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center pt-16">
+      <ProtectedRoute>
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center pt-16">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading documentation...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading documentation...</p>
           </div>
         </div>
-      </>
+      </ProtectedRoute>
     );
   }
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
   return (
-    <>
-      <ProtectedRoute>
-        <Navbar isDarkMode={isDarkMode} toggleTheme={() => setIsDarkMode(!isDarkMode)} />
-        
-        <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-gray-100' : 'bg-gray-50 text-gray-900'} pt-16 md:pt-20`}>
-          {/* Header */}
-          <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} border-b`}>
-            <div className="container mx-auto px-4 py-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">API Documentation</h1>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">Complete guide for {metadata?.apititle || 'API Service'}</p>
-                </div>
-                <Button
-                  onClick={() => window.location.href = '/'}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Back to Home
-                </Button>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background text-foreground pt-16 md:pt-20">
+        {/* Header */}
+        <div className="bg-card border-b">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold">API Documentation</h1>
+                <p className="text-muted-foreground mt-1">Complete guide for {metadata?.apititle || 'API Service'}</p>
               </div>
+              <Button
+                onClick={() => window.location.href = '/'}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Back to Home
+              </Button>
             </div>
           </div>
+        </div>
 
           <div className="container mx-auto px-4 py-8">
             {/* API Info */}
@@ -165,7 +159,7 @@ export default function Docs() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <h3 className="font-semibold mb-2">Base URL</h3>
-                    <code className="bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded text-sm">
+                    <code className="bg-secondary px-3 py-2 rounded text-sm">
                       {baseUrl}
                     </code>
                   </div>
@@ -175,7 +169,7 @@ export default function Docs() {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">Creator</h3>
-                    <span className="text-gray-600 dark:text-gray-400">{metadata?.creator || 'Unknown'}</span>
+                    <span className="text-muted-foreground">{metadata?.creator || 'Unknown'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -191,7 +185,7 @@ export default function Docs() {
                   <div>
                     <h3 className="font-semibold mb-2">Example Request</h3>
                     <div className="relative">
-                      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                      <pre className="bg-foreground text-background p-4 rounded-lg overflow-x-auto">
                         <code>{`// Get API metadata
 fetch('${baseUrl}/api/metadata')
   .then(response => response.json())
@@ -258,7 +252,7 @@ fetch('${baseUrl}/api/random/waifu')
                     <CardContent>
                       <div className="space-y-4">
                         {endpoints.map((endpoint, index) => (
-                          <div key={index} className={`border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} rounded-lg p-4`}>
+                          <div key={index} className="border rounded-lg p-4">
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-3">
                                 <Badge className={getMethodColor(endpoint.method)}>
@@ -280,8 +274,8 @@ fetch('${baseUrl}/api/random/waifu')
                                 }
                               </Button>
                             </div>
-                            <p className={`text-gray-600 dark:text-gray-400 mb-3`}>{endpoint.desc}</p>
-                            <div className={`bg-gray-100 dark:bg-gray-800 p-3 rounded`}>
+                            <p className="text-muted-foreground mb-3">{endpoint.desc}</p>
+                            <div className="bg-secondary p-3 rounded">
                               <code className="text-sm">{`${baseUrl}${endpoint.path}`}</code>
                             </div>
                           </div>
@@ -302,7 +296,7 @@ fetch('${baseUrl}/api/random/waifu')
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h3 className="font-semibold mb-2">Free Tier</h3>
-                    <ul className="space-y-1 text-gray-600 dark:text-gray-400">
+                    <ul className="space-y-1 text-muted-foreground">
                       <li>• 30 requests per minute</li>
                       <li>• Standard response time</li>
                       <li>• All endpoints available</li>
@@ -310,14 +304,12 @@ fetch('${baseUrl}/api/random/waifu')
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2">Response Format</h3>
-                    <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded">
-                      <pre className="text-sm">
-{`{
+                    <div className="bg-secondary p-3 rounded">
+                      <pre className="text-sm">{`{
   "status": true,
   "creator": "${metadata?.creator || 'API Creator'}",
   "result": "Response data here"
-}`}
-                      </pre>
+}`}</pre>
                     </div>
                   </div>
                 </div>
