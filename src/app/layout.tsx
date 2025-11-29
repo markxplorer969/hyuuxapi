@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/contexts/AuthContext";
 import CustomThemeProvider from "@/components/theme-provider";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/layout/Navbar";
-import { FloatingBubble } from "@/components/floating-bubble";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,22 +17,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Slowly API - Modern RESTful API Service",
-  description: "Powerful RESTful API with AI integration, media downloaders, random content generators, and image processing tools.",
-  keywords: ["API", "RESTful", "AI", "Downloader", "Random", "Tools", "Next.js", "TypeScript"],
-  authors: [{ name: "Slowly" }],
+  title: "Hyuux API - Modern API Service",
+  description: "Powerful RESTful API with AI integration, media downloaders, random content generators, and image processing tools. Built for developers who need reliable and fast API services.",
+  keywords: ["API", "RESTful", "AI", "Media Download", "Image Processing", "Next.js", "TypeScript"],
+  authors: [{ name: "Hyyux API Team" }],
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo.svg",
   },
   openGraph: {
-    title: "Slowly API",
-    description: "Modern RESTful API service providing AI integration, media tools, and more.",
+    title: "Hyyux API - Modern API Service",
+    description: "Powerful RESTful API with AI integration, media downloaders, and more",
+    url: "https://hyuuxapi.vercel.app",
+    siteName: "Hyyux API",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Slowly API",
-    description: "Modern RESTful API service providing AI integration, media tools, and more.",
+    title: "Hyyux API - Modern API Service",
+    description: "Powerful RESTful API with AI integration, media downloaders, and more",
   },
 };
 
@@ -45,18 +46,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background text-foreground antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <AuthProvider>
-          <CustomThemeProvider>
+        <CustomThemeProvider>
+          <AuthProvider>
             <Navbar />
-            <main className="pt-20">
+            <main className="min-h-screen">
               {children}
             </main>
-            <FloatingBubble />
             <Toaster />
-          </CustomThemeProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </CustomThemeProvider>
       </body>
     </html>
   );
