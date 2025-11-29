@@ -5,7 +5,7 @@
       "desc": "OSS ai",
       "method": "GET",
       "status": "Active",
-      "path": "/api/ai/oss?text="
+      "path": "/ai/oss?text="
     }
   ],
   "downloader": [
@@ -14,35 +14,35 @@
       "desc": "Downloader capcut",
       "method": "GET",
       "status": "Active",
-      "path": "/api/download/capcut?url="
+      "path": "/download/capcut?url="
     },
     {
       "name": "Facebook",
       "desc": "Downloader facebook",
       "method": "GET",
       "status": "Active",
-      "path": "/api/download/facebook?url="
+      "path": "/download/facebook?url="
     },
     {
       "name": "SnackVideo",
       "desc": "Downloader snack video",
       "method": "GET",
       "status": "Active",
-      "path": "/api/download/snackvideo?url="
+      "path": "/download/snackvideo?url="
     },
     {
       "name": "Twitter",
       "desc": "Downloader twitter",
       "method": "GET",
       "status": "Active",
-      "path": "/api/download/x?url="
+      "path": "/download/x?url="
     },
     {
       "name": "Mediafire",
       "desc": "Downloader mediafire",
       "method": "GET",
       "status": "Active",
-      "path": "/api/download/mediafire?url="
+      "path": "/download/mediafire?url="
     }
   ],
   "random": [
@@ -51,21 +51,21 @@
       "desc": "Random foto blue archive",
       "method": "GET",
       "status": "Active",
-      "path": "/api/random/ba"
+      "path": "/random/ba"
     },
     {
       "name": "Random Waifu",
       "desc": "Random foto waifu",
       "method": "GET",
       "status": "Active",
-      "path": "/api/random/waifu"
+      "path": "/random/waifu"
     },
     {
       "name": "Pap Ayang",
       "desc": "Random pap ayang",
       "method": "GET",
       "status": "Active",
-      "path": "/api/random/papayang"
+      "path": "/random/papayang"
     }
   ],
   "tools": [
@@ -74,7 +74,7 @@
       "desc": "Convert image to unblur",
       "method": "GET",
       "status": "Active",
-      "path": "/api/tools/unblur?url="
+      "path": "/tools/unblur?url="
     }
   ],
   "api": [
