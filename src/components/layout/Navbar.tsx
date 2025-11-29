@@ -2,11 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, X, Sun, Moon } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, X, Sun, Moon, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useTheme } from 'next-themes';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -20,7 +28,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { user, logout, initializing } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +40,11 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
 
   return (
     <>
@@ -86,12 +101,38 @@ export default function Navbar() {
                   <span className="sr-only">Toggle theme</span>
                 </Button>
                 
-                <Button variant="ghost" size="sm">
-                  Login
-                </Button>
-                <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                  Get Started
-                </Button>
+                {initializing ? (
+                  <div className="w-16 h-9 bg-muted animate-pulse rounded-lg" />
+                ) : user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        {user.displayName || user.email}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <User className="w-4 h-4 mr-2" />
+                        Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={() => router.push('/login')}>
+                      Login
+                    </Button>
+                    <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" onClick={() => router.push('/login')}>
+                      Get Started
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -111,12 +152,38 @@ export default function Navbar() {
                   <span className="sr-only">Toggle theme</span>
                 </Button>
                 
-                <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
-                  Login
-                </Button>
-                <Button size="sm" className="hidden sm:inline-flex bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                  Get Started
-                </Button>
+                {initializing ? (
+                  <div className="w-16 h-9 bg-muted animate-pulse rounded-lg" />
+                ) : user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        <span className="hidden sm:inline">{user.displayName || user.email}</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <User className="w-4 h-4 mr-2" />
+                        Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => router.push('/login')}>
+                      Login
+                    </Button>
+                    <Button size="sm" className="hidden sm:inline-flex bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" onClick={() => router.push('/login')}>
+                      Get Started
+                    </Button>
+                  </>
+                )}
               </div>
 
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -161,12 +228,35 @@ export default function Navbar() {
                           {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                         </Button>
                         
-                        <Button variant="ghost" className="w-full justify-start">
-                          Login
-                        </Button>
-                        <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                          Get Started
-                        </Button>
+                        {initializing ? (
+                          <div className="w-full h-9 bg-muted animate-pulse rounded-lg" />
+                        ) : user ? (
+                          <>
+                            <div className="px-3 py-2 bg-muted rounded-lg">
+                              <div className="flex items-center gap-2 text-sm">
+                                <User className="w-4 h-4" />
+                                <span className="font-medium">{user.displayName || user.email}</span>
+                              </div>
+                            </div>
+                            <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/profile')}>
+                              <User className="w-4 h-4 mr-2" />
+                              Profile
+                            </Button>
+                            <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+                              <LogOut className="w-4 h-4 mr-2" />
+                              Logout
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button variant="ghost" className="w-full justify-start" onClick={() => {router.push('/login'); setIsMobileMenuOpen(false);}}>
+                              Login
+                            </Button>
+                            <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" onClick={() => {router.push('/login'); setIsMobileMenuOpen(false);}}>
+                              Get Started
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

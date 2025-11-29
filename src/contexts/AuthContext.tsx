@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
   uid: string;
@@ -28,7 +28,31 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [initializing, setInitializing] = useState(false);
+  const [initializing, setInitializing] = useState(true);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('auth_user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Failed to parse stored user:', error);
+        localStorage.removeItem('auth_user');
+      }
+    }
+    setInitializing(false);
+  }, []);
+
+  // Save user state to localStorage whenever it changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('auth_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('auth_user');
+    }
+  }, [user]);
 
   const handleSignInWithGoogle = async () => {
     // Simulate successful Google sign in
