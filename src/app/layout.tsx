@@ -2,9 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import CustomThemeProvider from "@/components/theme-provider";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Navbar from "@/components/layout/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,24 +14,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hyuux API - Modern API Service",
-  description: "Powerful RESTful API with AI integration, media downloaders, random content generators, and image processing tools. Built for developers who need reliable and fast API services.",
-  keywords: ["API", "RESTful", "AI", "Media Download", "Image Processing", "Next.js", "TypeScript"],
-  authors: [{ name: "Hyyux API Team" }],
+  title: "Z.ai Code Scaffold - AI-Powered Development",
+  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
+  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
+  authors: [{ name: "Z.ai Team" }],
   icons: {
-    icon: "/logo.svg",
+    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
   openGraph: {
-    title: "Hyyux API - Modern API Service",
-    description: "Powerful RESTful API with AI integration, media downloaders, and more",
-    url: "https://hyuuxapi.vercel.app",
-    siteName: "Hyyux API",
+    title: "Z.ai Code Scaffold",
+    description: "AI-powered development with modern React stack",
+    url: "https://chat.z.ai",
+    siteName: "Z.ai",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hyyux API - Modern API Service",
-    description: "Powerful RESTful API with AI integration, media downloaders, and more",
+    title: "Z.ai Code Scaffold",
+    description: "AI-powered development with modern React stack",
   },
 };
 
@@ -48,15 +45,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <CustomThemeProvider>
-          <AuthProvider>
-            <Navbar />
-            <main className="min-h-screen">
-              {children}
-            </main>
-            <Toaster />
-          </AuthProvider>
-        </CustomThemeProvider>
+        {children}
+        <Toaster />
       </body>
     </html>
   );
