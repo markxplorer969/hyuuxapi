@@ -112,7 +112,7 @@ export default function Navbar() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="cursor-pointer">
+                      <DropdownMenuItem onClick={() => router.push('/profile')} className="cursor-pointer">
                         <User className="w-4 h-4 mr-2" />
                         Profile
                       </DropdownMenuItem>
@@ -163,7 +163,7 @@ export default function Navbar() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="cursor-pointer">
+                      <DropdownMenuItem onClick={() => router.push('/profile')} className="cursor-pointer">
                         <User className="w-4 h-4 mr-2" />
                         Profile
                       </DropdownMenuItem>

@@ -62,7 +62,7 @@ result = generate_content('Write a Python function to calculate factorial')`
   }
 };
 
-export default function CodePreview() {
+export function CodePreview() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('curl');
 

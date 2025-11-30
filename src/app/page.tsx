@@ -21,7 +21,15 @@ import {
   Terminal,
   Globe,
   Star,
-  ChevronRight as ChevronRightIcon
+  ChevronRight as ChevronRightIcon,
+  Code2,
+  Database,
+  Layers,
+  Container,
+  Cloud,
+  Cpu,
+  Palette,
+  Server
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -64,14 +72,14 @@ const features = [
 ];
 
 const techStack = [
-  { name: 'Next.js 15', icon: '⚡' },
-  { name: 'TypeScript 5', icon: '📘' },
-  { name: 'Tailwind CSS', icon: '🎨' },
-  { name: 'Prisma ORM', icon: '🗄️' },
-  { name: 'PostgreSQL', icon: '🐘' },
-  { name: 'Redis Cache', icon: '⚡' },
-  { name: 'Docker', icon: '🐳' },
-  { name: 'Vercel', icon: '▲' }
+  { name: 'Next.js 15', icon: <Code2 className="w-8 h-8 text-gray-700 dark:text-gray-300" />, color: 'text-gray-700 dark:text-gray-300' },
+  { name: 'TypeScript 5', icon: <Code2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />, color: 'text-blue-600 dark:text-blue-400' },
+  { name: 'Tailwind CSS', icon: <Palette className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />, color: 'text-cyan-600 dark:text-cyan-400' },
+  { name: 'Prisma ORM', icon: <Database className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />, color: 'text-indigo-600 dark:text-indigo-400' },
+  { name: 'SQLite', icon: <Database className="w-8 h-8 text-green-600 dark:text-green-400" />, color: 'text-green-600 dark:text-green-400' },
+  { name: 'Node Cache', icon: <Cpu className="w-8 h-8 text-orange-600 dark:text-orange-400" />, color: 'text-orange-600 dark:text-orange-400' },
+  { name: 'shadcn/ui', icon: <Layers className="w-8 h-8 text-purple-600 dark:text-purple-400" />, color: 'text-purple-600 dark:text-purple-400' },
+  { name: 'React 19', icon: <Sparkles className="w-8 h-8 text-blue-500 dark:text-blue-400" />, color: 'text-blue-500 dark:text-blue-400' }
 ];
 
 const testimonials = [
@@ -103,6 +111,10 @@ const testimonials = [
 
 export default function Home() {
   const [copiedEndpoint, setCopiedEndpoint] = useState<string | null>(null);
+  const [animatedStats, setAnimatedStats] = useState({
+    apiCalls: 0,
+    developers: 0
+  });
 
   useEffect(() => {
     // Fetch initial stats
@@ -117,6 +129,41 @@ export default function Home() {
     };
 
     fetchStats();
+  }, []);
+
+  useEffect(() => {
+    // Animate statistics on mount
+    const targetApiCalls = features.reduce((acc, f) => acc + parseInt(f.stats.requests), 0);
+    const targetDevelopers = 50;
+    
+    const duration = 2000; // 2 seconds
+    const steps = 60;
+    const stepDuration = duration / steps;
+    
+    let currentStep = 0;
+    
+    const timer = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
+      
+      // Easing function for smooth animation
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      
+      setAnimatedStats({
+        apiCalls: Math.floor(targetApiCalls * easeOutQuart),
+        developers: Math.floor(targetDevelopers * easeOutQuart)
+      });
+      
+      if (currentStep >= steps) {
+        clearInterval(timer);
+        setAnimatedStats({
+          apiCalls: targetApiCalls,
+          developers: targetDevelopers
+        });
+      }
+    }, stepDuration);
+    
+    return () => clearInterval(timer);
   }, []);
 
   const copyToClipboard = async (text: string) => {
@@ -163,7 +210,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button
                 size="lg"
-                className="flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/20 dark:border-gray-700 hover:bg-white hover:text-gray-900 text-gray-900 dark:text-white font-semibold py-4 px-8"
+                className="flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-white/20 dark:border-gray-700 hover:bg-white hover:text-gray-900 text-gray-700 dark:text-white font-semibold py-4 px-8"
                 onClick={() => window.location.href = '/docs'}
               >
                 <Terminal className="w-5 h-5" />
@@ -261,44 +308,105 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Stats Section */}
-      <div className="py-16 bg-white dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Trusted by Developers
+      {/* Trusted by Developers Section */}
+      <div className="py-20 bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
+        </div>
+        
+        {/* Floating Elements */}
+        <div className="absolute top-10 left-10 w-20 h-20 bg-blue-500/10 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute top-20 right-20 w-32 h-32 bg-purple-500/10 rounded-full blur-xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-10 left-1/4 w-24 h-24 bg-green-500/10 rounded-full blur-xl animate-pulse delay-2000"></div>
+        
+        <div className="relative container mx-auto px-4">
+          <div className="text-center mb-16 animate-slide-in-up">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 border border-blue-200 dark:border-blue-700 rounded-full mb-6 animate-scale-in">
+              <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-blue-700 dark:text-blue-300 font-medium text-sm">Global Community</span>
+            </div>
+            
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Trusted by Developers Worldwide
               </span>
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Join thousands of developers who trust Slowly API
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
+              Join thousands of developers and companies who rely on Slowly API for their mission-critical applications
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto mb-12">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                {features.reduce((acc, f) => acc + parseInt(f.stats.requests), 0)}
+          {/* Enhanced Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-16">
+            <div className="group relative animate-slide-in-up animate-delay-100">
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+              <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-xl border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-2">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-float">
+                  <Activity className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-5xl font-bold text-blue-600 dark:text-blue-400 mb-2 tabular-nums">
+                  {animatedStats.apiCalls}M+
+                </div>
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">API Calls</div>
+                <div className="mt-4 text-xs text-green-600 dark:text-green-400 font-medium animate-pulse">+12% this month</div>
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">API Calls</div>
             </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
-                99.9%
+
+            <div className="group relative animate-slide-in-up animate-delay-200">
+              <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-green-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+              <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-xl border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-2">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-float delay-1000">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-5xl font-bold text-green-600 dark:text-green-400 mb-2 tabular-nums">99.9%</div>
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Uptime SLA</div>
+                <div className="mt-4 text-xs text-green-600 dark:text-green-400 font-medium">Industry leading</div>
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Uptime</div>
             </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                &lt;100ms
+
+            <div className="group relative animate-slide-in-up animate-delay-300">
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-purple-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+              <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-xl border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-2">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-float delay-2000">
+                  <Zap className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-5xl font-bold text-purple-600 dark:text-purple-400 mb-2 tabular-nums">&lt;100ms</div>
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Avg Response</div>
+                <div className="mt-4 text-xs text-green-600 dark:text-green-400 font-medium">Lightning fast</div>
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Avg Response</div>
             </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-                10K+
+
+            <div className="group relative animate-slide-in-up animate-delay-400">
+              <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-orange-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+              <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-xl border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-2">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-float delay-3000">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-5xl font-bold text-orange-600 dark:text-orange-400 mb-2 tabular-nums">
+                  {animatedStats.developers}K+
+                </div>
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Happy Developers</div>
+                <div className="mt-4 text-xs text-green-600 dark:text-green-400 font-medium">Growing daily</div>
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Happy Developers</div>
+            </div>
+          </div>
+
+          {/* Company Logos Section */}
+          <div className="text-center mb-12 animate-slide-in-up animate-delay-500">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-8">
+              Trusted by leading companies and startups
+            </p>
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-60 hover:opacity-100 transition-opacity duration-500">
+              {['TechCorp', 'DataFlow', 'CloudNine', 'StartupHub', 'InnoTech', 'DevStudio'].map((company, index) => (
+                <div key={index} className="relative group transform transition-all duration-300 hover:scale-110">
+                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-20 transition duration-300"></div>
+                  <div className="relative px-6 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors duration-300">
+                    <span className="text-lg font-bold text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">{company}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -320,8 +428,10 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
             {techStack.map((tech, index) => (
-              <div key={index} className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div className="text-2xl mb-2">{tech.icon}</div>
+              <div key={index} className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+                <div className="flex justify-center mb-3">
+                  {tech.icon}
+                </div>
                 <div className="text-sm font-medium text-gray-900 dark:text-white">{tech.name}</div>
               </div>
             ))}
@@ -382,14 +492,14 @@ export default function Home() {
           <h2 className="text-3xl font-bold mb-4 text-white">
             Ready to Get Started?
           </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-white mb-8 max-w-3xl mx-auto opacity-90">
             Join thousands of developers building amazing applications with Slowly API
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
               variant="secondary"
-              className="flex items-center gap-2 border-white text-white hover:bg-white hover:text-gray-900 font-semibold py-4 px-8"
+              className="flex items-center gap-2 border-white text-white hover:bg-white hover:text-gray-900 font-semibold py-4 px-8 shadow-lg"
               onClick={() => window.location.href = '/docs'}
             >
               <Globe className="w-5 h-5" />
