@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
     // 构建时忽略ESLint错误
     ignoreDuringBuilds: true,
   },
+  // Optimize chunk loading
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'firebase', 'react'],
+  },
 };
 
 export default nextConfig;

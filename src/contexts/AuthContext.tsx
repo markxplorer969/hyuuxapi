@@ -10,16 +10,16 @@ import {
   onAuthStateChanged,
   User as FirebaseUser
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { createApiKey } from '@/lib/apiKeys';
+import { createApiKey, regenerateApiKey as regenerateUserApiKey } from '@/lib/apiKeys';
 
 interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-  role: 'FREE' | 'CHEAP' | 'PREMIUM' | 'VIP' | 'VVIP' | 'SUPREME';
+  role: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE';
   apiKey?: string;
   apiKeyId?: string;
   apiKeyLimit?: number;
@@ -82,15 +82,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       // User exists, get their API key
       const userData = userSnap.data() as User;
-      const apiKeyRef = doc(db, 'apiKeys', userData.uid);
-      const apiKeySnap = await getDoc(apiKeyRef);
       
-      if (apiKeySnap.exists()) {
-        const apiKeyData = apiKeySnap.data();
+      // Query apiKeys collection for keys belonging to this user
+      const apiKeysRef = collection(db, 'apiKeys');
+      const q = query(apiKeysRef, where('userId', '==', userData.uid), where('isActive', '==', true));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const apiKeyDoc = querySnapshot.docs[0];
+        const apiKeyData = apiKeyDoc.data();
         setUser({
           ...userData,
           apiKey: apiKeyData.key,
-          apiKeyId: apiKeyData.id,
+          apiKeyId: apiKeyDoc.id,
           apiKeyLimit: apiKeyData.limit,
           apiKeyUsage: apiKeyData.usage
         });
@@ -159,7 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     
     try {
-      const newApiKey = await regenerateApiKey(user.uid, user.apiKeyId || '');
+      const newApiKey = await regenerateUserApiKey(user.uid, user.apiKeyId || '');
       
       setUser(prev => prev ? {
         ...prev,

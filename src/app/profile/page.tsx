@@ -29,6 +29,8 @@ import {
   Crown,
   Sparkles,
   Package,
+  Check,
+  Copy,
   Lock,
   Eye,
   EyeOff,
@@ -42,22 +44,8 @@ export default function ProfilePage() {
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const [isOnline, setIsOnline] = useState(true);
-  const [authError, setAuthError] = useState<string | null>(null);
   const { user, logout } = useAuth();
   const router = useRouter();
-
-  // Password reset states
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPasswords, setShowPasswords] = useState(false);
-  const [passwordResetLoading, setPasswordResetLoading] = useState(false);
-
-  // API Key states (moved from separate component)
-  const [apiKeyVisible, setApiKeyVisible] = useState(false);
-  const [apiKeyCopied, setApiKeyCopied] = useState(false);
-  const [regenerating, setRegenerating] = useState(false);
-  const [regenerationError, setRegenerationError] = useState<string | null>(null);
 
   // Check online status
   useEffect(() => {
@@ -238,11 +226,10 @@ export default function ProfilePage() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'FREE': return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-      case 'CHEAP': return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200';
-      case 'PREMIUM': return 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200';
-      case 'VIP': return 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-200';
-      case 'VVIP': return 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-200';
-      case 'SUPREME': return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200';
+      case 'STARTER': return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200';
+      case 'PROFESSIONAL': return 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200';
+      case 'BUSINESS': return 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-200';
+      case 'ENTERPRISE': return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
     }
   };
@@ -252,17 +239,25 @@ export default function ProfilePage() {
     return Math.round((user.apiKeyUsage / user.apiKeyLimit) * 100);
   };
 
-  // Mock user data
+  // Mock user data - Update with new plan structure
   const userStats = {
     apiCalls: 1234,
     lastLogin: new Date(),
     joinDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
     plan: {
-      name: 'Pro',
-      price: '$29',
-      features: ['100K API calls/month', 'Priority support', 'Advanced features'],
+      name: user?.role || 'FREE',
+      price: user?.role === 'FREE' ? '$0' : 
+               user?.role === 'STARTER' ? '$9.99' :
+               user?.role === 'PROFESSIONAL' ? '$29.99' :
+               user?.role === 'BUSINESS' ? '$79.99' :
+               user?.role === 'ENTERPRISE' ? '$199.99' : '$0',
+      features: user?.role === 'FREE' ? ['20 API calls/day', 'Basic endpoints'] :
+                user?.role === 'STARTER' ? ['1K API calls/day', 'All endpoints', 'Email support'] :
+                user?.role === 'PROFESSIONAL' ? ['5K API calls/day', 'Priority support', 'Advanced features'] :
+                user?.role === 'BUSINESS' ? ['20K API calls/day', '24/7 support', 'Advanced analytics'] :
+                user?.role === 'ENTERPRISE' ? ['Unlimited API calls', 'Dedicated support', 'Custom solutions'] : ['Basic features'],
       status: 'Active',
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+      expires: user?.role === 'FREE' ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now for paid plans
     },
     status: 'Active'
   };
@@ -347,10 +342,10 @@ export default function ProfilePage() {
                     <Mail className="w-4 h-4" />
                     {user.email}
                   </CardDescription>
-                  {user.emailVerified && (
+                  {user.email && (
                     <Badge variant="secondary" className="mt-2">
                       <Shield className="w-3 h-3 mr-1" />
-                      Verified
+                      Email Verified
                     </Badge>
                   )}
                 </CardHeader>
@@ -383,112 +378,6 @@ export default function ProfilePage() {
 
                   <Separator />
 
-                  <div className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Account Settings
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={handleLogout}
-                      disabled={isLoading}
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      {isLoading ? 'Signing out...' : 'Sign Out'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* API Statistics */}
-              <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="w-5 h-5" />
-                    API Usage Statistics
-                  </CardTitle>
-                  <CardDescription>
-                    Your API usage and performance metrics
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-600 mb-2">
-                        {userStats.apiCalls.toLocaleString()}
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Total API Calls</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-green-600 mb-2">
-                        99.9%
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Success Rate</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Security Tab */}
-          <TabsContent value="security" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Password Reset */}
-              <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <RefreshCw className="w-5 h-5" />
-                    Reset Password
-                  </CardTitle>
-                  <CardDescription>
-                    Change your account password for enhanced security
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handlePasswordReset} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Current Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="currentPassword"
-                          type={showPasswords ? "text" : "password"}
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
-                          placeholder="Enter current password"
-                          required
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3"
-                          onClick={() => setShowPasswords(!showPasswords)}
-                        >
-                          {showPasswords ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="newPassword"
-                          type={showPasswords ? "text" : "password"}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Enter new password"
-                          required
-                          minLength={8}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3"
                           onClick={() => setShowPasswords(!showPasswords)}
                         >
                           {showPasswords ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -602,8 +491,8 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   API Key
-                  <Badge className={getRoleColor(user.role || 'FREE')}>
-                    {user.role}
+                  <Badge className={getRoleColor(user?.role || 'FREE')}>
+                    {user?.role || 'FREE'}
                   </Badge>
                 </CardTitle>
                 <CardDescription>
@@ -681,7 +570,7 @@ export default function ProfilePage() {
                     )}
                   </Button>
                   
-                  {user.role !== 'SUPREME' && (
+                  {(user?.role || 'FREE') !== 'ENTERPRISE' && (
                     <Button variant="outline" asChild>
                       <a href="/pricing">Upgrade Plan</a>
                     </Button>

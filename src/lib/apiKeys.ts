@@ -1,10 +1,9 @@
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, increment } from 'firebase/firestore';
 import { db } from './firebase';
 import { randomBytes } from 'crypto';
 
 // API Key data model
 export interface ApiKey {
-  id: string;
   key: string;
   userId: string;
   name?: string;
@@ -20,11 +19,10 @@ export interface ApiKey {
 // User role to limit mapping
 export const ROLE_LIMITS: Record<string, number> = {
   FREE: 20,
-  CHEAP: 1000,
-  PREMIUM: 2500,
-  VIP: 5000,
-  VVIP: 10000,
-  SUPREME: 20000,
+  STARTER: 1000,
+  PROFESSIONAL: 5000,
+  BUSINESS: 20000,
+  ENTERPRISE: 100000,
 };
 
 // Generate a secure random API key
@@ -43,7 +41,7 @@ export function generateApiKey(length: number = 32): string {
 // Create a new API key for a user
 export async function createApiKey(
   userId: string, 
-  role: 'FREE' | 'CHEAP' | 'PREMIUM' | 'VIP' | 'VVIP' | 'SUPREME' = 'FREE',
+  role: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE' = 'FREE',
   custom: boolean = false,
   name?: string
 ): Promise<string> {
@@ -51,7 +49,6 @@ export async function createApiKey(
   const keyId = `key_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   
   const apiKeyData: ApiKey = {
-    id: keyId,
     key: apiKey,
     userId,
     name: name || `${role} Key`,
@@ -80,7 +77,7 @@ export async function getApiKeyByKey(key: string): Promise<ApiKey | null> {
   }
   
   const doc = querySnapshot.docs[0];
-  return { id: doc.id, ...doc.data() } as ApiKey;
+  return { ...doc.data() } as ApiKey;
 }
 
 // Update API key usage

@@ -17,13 +17,12 @@ import { getAnalytics, isSupported } from "firebase/analytics";
 
 // Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyDWzfAqY7eYlmKp6wgxi2qPV7UukKm5zqw",
-  authDomain: "hyuuapi.firebaseapp.com",
-  projectId: "hyuuapi",
-  storageBucket: "hyuuapi.firebasestorage.app",
-  messagingSenderId: "1076041033236",
-  appId: "1:1076041033236:web:fff5963eabb70cdfd76901",
-  measurementId: "G-B8L6HH3T57"
+  apiKey: "AIzaSyABjlv-bzhlBG6eNodCtNa25ZN_desL-gg",
+  authDomain: "hyuu-c4343.firebaseapp.com",
+  projectId: "hyuu-c4343",
+  storageBucket: "hyuu-c4343.firebasestorage.app",
+  messagingSenderId: "188778202454",
+  appId: "1:188778202454:web:df5b9f443a6fd27ed542f7"
 };
 
 // Initialize core Firebase services
