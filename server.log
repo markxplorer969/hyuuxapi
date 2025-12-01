@@ -1,0 +1,8 @@
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:1040
+   - Network:      http://0.0.0.0:1040
+
+ ✓ Starting...
+ ✓ Ready in 593ms
+(node:84) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
