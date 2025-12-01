@@ -17,12 +17,12 @@ import { getAnalytics, isSupported } from "firebase/analytics";
 
 // Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyABjlv-bzhlBG6eNodCtNa25ZN_desL-gg",
-  authDomain: "hyuu-c4343.firebaseapp.com",
-  projectId: "hyuu-c4343",
-  storageBucket: "hyuu-c4343.firebasestorage.app",
-  messagingSenderId: "188778202454",
-  appId: "1:188778202454:web:df5b9f443a6fd27ed542f7"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyABjlv-bzhlBG6eNodCtNa25ZN_desL-gg",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "hyuu-c4343.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "hyuu-c4343",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "hyuu-c4343.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "188778202454",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:188778202454:web:df5b9f443a6fd27ed542f7"
 };
 
 // Initialize core Firebase services

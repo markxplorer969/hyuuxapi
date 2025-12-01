@@ -233,7 +233,10 @@ export default function AdminUsersPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          id: selectedUser.id,
+          ...formData
+        }),
       });
 
       const result = await response.json();

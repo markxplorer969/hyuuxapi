@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb, adminCollections } from '@/lib/firebase-admin';
+import { adminDb, adminCollections, FieldValue } from '@/lib/firebase-admin';
+
+interface Params {
+  params: Promise<{ id: string }>;
+}
 
 // PUT - Update user
-export async function PUT(request: NextRequest) {
+export async function PUT(request: NextRequest, { params }: Params) {
   try {
-    const { id, displayName, email, role, plan, apiKeyLimit, isActive } = await request.json();
+    const { id } = await params;
+    const { displayName, email, role, plan, apiKeyLimit, isActive } = await request.json();
 
     if (!id) {
       return NextResponse.json(
@@ -24,7 +29,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const updateData: any = {
-      updatedAt: adminDb.fieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     };
 
     // Only update fields that are provided
@@ -52,7 +57,7 @@ export async function PUT(request: NextRequest) {
         adminDb.collection(adminCollections.apiKeys).doc(apiKeyDoc.id).update({
           plan: plan,
           limit: newLimit,
-          updatedAt: adminDb.fieldValue.serverTimestamp()
+          updatedAt: FieldValue.serverTimestamp()
         });
       });
     }
@@ -77,10 +82,9 @@ export async function PUT(request: NextRequest) {
 }
 
 // DELETE - Delete user
-export async function DELETE(request: NextRequest) {
+export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(

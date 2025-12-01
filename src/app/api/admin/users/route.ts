@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb, adminCollections } from '@/lib/firebase-admin';
+import { adminDb, adminCollections, FieldValue } from '@/lib/firebase-admin';
 
 // GET - List all users
 export async function GET() {
@@ -81,8 +81,8 @@ export async function POST(request: NextRequest) {
       plan: plan || 'FREE',
       apiKeyUsage: 0,
       apiKeyLimit: getPlanLimit(plan || 'FREE'),
-      createdAt: adminDb.Timestamp.now(),
-      updatedAt: adminDb.Timestamp.now(),
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
       isActive: true
     };
 
@@ -98,8 +98,8 @@ export async function POST(request: NextRequest) {
       limit: getPlanLimit(plan || 'FREE'),
       usage: 0,
       isActive: true,
-      createdAt: adminDb.Timestamp.now(),
-      updatedAt: adminDb.Timestamp.now()
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp()
     };
 
     await adminDb.collection(adminCollections.apiKeys).doc(apiKey).set(apiKeyData);
@@ -149,7 +149,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const updateData: any = {
-      updatedAt: adminDb.Timestamp.now()
+      updatedAt: FieldValue.serverTimestamp()
     };
 
     // Only update fields that are provided
@@ -177,7 +177,7 @@ export async function PUT(request: NextRequest) {
         adminDb.collection(adminCollections.apiKeys).doc(apiKeyDoc.id).update({
           plan: plan,
           limit: newLimit,
-          updatedAt: adminDb.Timestamp.now()
+          updatedAt: FieldValue.serverTimestamp()
         });
       });
     }
@@ -222,6 +222,7 @@ export async function DELETE(request: NextRequest) {
         { error: 'User not found' },
         { status: 404 }
       );
+    }
 
     const userData = userDoc.data();
 

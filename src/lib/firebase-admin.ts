@@ -32,6 +32,13 @@ export const adminAuth = admin.auth();
 export const FieldValue = admin.firestore.FieldValue;
 export const Timestamp = admin.firestore.Timestamp;
 
+// Helper function to get adminDb with fieldValue
+export const adminDbWithFieldValue = {
+  ...admin.firestore(),
+  fieldValue: admin.firestore.FieldValue,
+  Timestamp: admin.firestore.Timestamp
+};
+
 // Collections names
 export const adminCollections = {
   users: 'users',
