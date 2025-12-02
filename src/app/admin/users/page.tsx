@@ -1,39 +1,46 @@
+// /app/admin/users/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  Users, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
-  Filter,
-  ChevronDown,
-  Shield,
-  Mail,
-  Calendar,
-  Key,
-  UserCheck,
-  UserX,
+import {
+  Users,
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   RefreshCw,
-  UserPlus,
-  Download,
+  Shield,
+  Key,
+  Mail,
   Eye,
   EyeOff,
-  AlertCircle,
-  CheckCircle,
-  X
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -50,52 +57,131 @@ interface User {
   isActive: boolean;
 }
 
+type FormState = {
+  displayName: string;
+  email: string;
+  password: string;
+  role: 'user' | 'admin';
+  plan: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE';
+  apiKeyLimit: number;
+};
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [planFilter, setPlanFilter] = useState<string>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
+  const [planFilter, setPlanFilter] = useState<
+    'all' | 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE'
+  >('all');
+
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [editMode, setEditMode] = useState(false);
   const [createMode, setCreateMode] = useState(false);
-  const [deleteMode, setDeleteMode] = useState(false);
-  const [formData, setFormData] = useState({
+  const [editMode, setEditMode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [formData, setFormData] = useState<FormState>({
     displayName: '',
     email: '',
     password: '',
     role: 'user',
     plan: 'FREE',
-    apiKeyLimit: 20
+    apiKeyLimit: 20,
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const { toast } = useToast();
-  const router = useRouter();
 
-  // Fetch users
+  const { toast } = useToast();
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'bg-red-100 text-red-800';
+      case 'user':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-slate-100 text-slate-800';
+    }
+  };
+
+  const getPlanBadgeColor = (plan: string) => {
+    switch (plan) {
+      case 'FREE':
+        return 'bg-slate-100 text-slate-800';
+      case 'STARTER':
+        return 'bg-emerald-100 text-emerald-800';
+      case 'PROFESSIONAL':
+        return 'bg-blue-100 text-blue-800';
+      case 'BUSINESS':
+        return 'bg-amber-100 text-amber-800';
+      case 'ENTERPRISE':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-slate-100 text-slate-800';
+    }
+  };
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return 'Unknown';
+
+    let date: Date;
+
+    if (timestamp.toDate) {
+      date = timestamp.toDate();
+    } else if (timestamp._seconds) {
+      date = new Date(
+        timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1_000_000,
+      );
+    } else if (typeof timestamp === 'string') {
+      date = new Date(timestamp);
+    } else if (timestamp instanceof Date) {
+      date = timestamp;
+    } else {
+      return 'Unknown';
+    }
+
+    if (Number.isNaN(date.getTime())) return 'Unknown';
+
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(date);
+  };
+
+  const getUsagePercentage = (user: User) => {
+    if (!user.apiKeyLimit) return 0;
+    return Math.min(100, Math.round((user.apiKeyUsage / user.apiKeyLimit) * 100));
+  };
+
+  // ---------------------------------------------------------------------------
+  // Data fetching
+  // ---------------------------------------------------------------------------
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/users');
-      const result = await response.json();
-      
-      if (result.success) {
-        setUsers(result.data);
-        setFilteredUsers(result.data);
+      const res = await fetch('/api/admin/users');
+      const json = await res.json();
+
+      if (json.success) {
+        setUsers(json.data);
+        setFilteredUsers(json.data);
       } else {
         toast({
           title: 'Error',
-          description: result.error || 'Failed to fetch users',
-          variant: 'destructive'
+          description: json.error || 'Failed to fetch users',
+          variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to fetch users',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -104,118 +190,98 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Filter users
+  // ---------------------------------------------------------------------------
+  // Filtering
+  // ---------------------------------------------------------------------------
   useEffect(() => {
-    let filtered = users;
+    let data = [...users];
 
-    if (searchTerm) {
-      filtered = filtered.filter(user => 
-        user.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      data = data.filter(
+        (u) =>
+          u.displayName.toLowerCase().includes(term) ||
+          u.email.toLowerCase().includes(term),
       );
     }
 
     if (roleFilter !== 'all') {
-      filtered = filtered.filter(user => user.role === roleFilter);
+      data = data.filter((u) => u.role === roleFilter);
     }
 
     if (planFilter !== 'all') {
-      filtered = filtered.filter(user => user.plan === planFilter);
+      data = data.filter((u) => u.plan === planFilter);
     }
 
-    setFilteredUsers(filtered);
+    setFilteredUsers(data);
   }, [users, searchTerm, roleFilter, planFilter]);
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200';
-      case 'user': return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-    }
+  // ---------------------------------------------------------------------------
+  // CRUD handlers
+  // ---------------------------------------------------------------------------
+  const resetForm = () => {
+    setFormData({
+      displayName: '',
+      email: '',
+      password: '',
+      role: 'user',
+      plan: 'FREE',
+      apiKeyLimit: 20,
+    });
+    setShowPassword(false);
   };
 
-  const getPlanBadgeColor = (plan: string) => {
-    switch (plan) {
-      case 'FREE': return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-      case 'STARTER': return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200';
-      case 'PROFESSIONAL': return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200';
-      case 'BUSINESS': return 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-200';
-      case 'ENTERPRISE': return 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-    }
+  const openCreateDialog = () => {
+    resetForm();
+    setSelectedUser(null);
+    setCreateMode(true);
+    setEditMode(false);
   };
 
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return 'Unknown';
-    
-    let date: Date;
-    
-    if (timestamp.toDate) {
-      date = timestamp.toDate();
-    } else if (timestamp._seconds) {
-      date = new Date(timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000);
-    } else if (typeof timestamp === 'string') {
-      date = new Date(timestamp);
-    } else if (timestamp instanceof Date) {
-      date = timestamp;
-    } else {
-      return 'Unknown';
-    }
-    
-    if (isNaN(date.getTime())) {
-      return 'Unknown';
-    }
-    
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    }).format(date);
+  const openEditDialog = (user: User) => {
+    setSelectedUser(user);
+    setFormData({
+      displayName: user.displayName,
+      email: user.email,
+      password: '',
+      role: user.role,
+      plan: user.plan,
+      apiKeyLimit: user.apiKeyLimit,
+    });
+    setCreateMode(false);
+    setEditMode(true);
   };
 
   const handleCreateUser = async () => {
     try {
       setSubmitting(true);
-      
-      const response = await fetch('/api/admin/users', {
+      const res = await fetch('/api/admin/users', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
+      const json = await res.json();
 
-      const result = await response.json();
-      
-      if (result.success) {
-        toast({
-          title: 'Success',
-          description: 'User created successfully',
-        });
+      if (json.success) {
+        toast({ title: 'Success', description: 'User created successfully.' });
         setCreateMode(false);
-        setFormData({
-          displayName: '',
-          email: '',
-          password: '',
-          role: 'user',
-          plan: 'FREE',
-          apiKeyLimit: 20
-        });
+        resetForm();
         fetchUsers();
       } else {
         toast({
           title: 'Error',
-          description: result.error || 'Failed to create user',
-          variant: 'destructive'
+          description: json.error || 'Failed to create user.',
+          variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
-        description: 'Failed to create user',
-        variant: 'destructive'
+        description: 'Failed to create user.',
+        variant: 'destructive',
       });
     } finally {
       setSubmitting(false);
@@ -224,190 +290,208 @@ export default function AdminUsersPage() {
 
   const handleUpdateUser = async () => {
     if (!selectedUser) return;
-
     try {
       setSubmitting(true);
-      
-      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+      const res = await fetch(`/api/admin/users/${selectedUser.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: selectedUser.id,
-          ...formData
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedUser.id, ...formData }),
       });
+      const json = await res.json();
 
-      const result = await response.json();
-      
-      if (result.success) {
-        toast({
-          title: 'Success',
-          description: 'User updated successfully',
-        });
+      if (json.success) {
+        toast({ title: 'Success', description: 'User updated successfully.' });
         setEditMode(false);
         setSelectedUser(null);
+        resetForm();
         fetchUsers();
       } else {
         toast({
           title: 'Error',
-          description: result.error || 'Failed to update user',
-          variant: 'destructive'
+          description: json.error || 'Failed to update user.',
+          variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
-        description: 'Failed to update user',
-        variant: 'destructive'
+        description: 'Failed to update user.',
+        variant: 'destructive',
       });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      return;
-    }
+  const handleDeleteUser = async (id: string) => {
+    const ok = window.confirm(
+      'Are you sure you want to delete this user? This action cannot be undone.',
+    );
+    if (!ok) return;
 
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        toast({
-          title: 'Success',
-          description: 'User deleted successfully',
-        });
+      const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (json.success) {
+        toast({ title: 'Success', description: 'User deleted successfully.' });
         fetchUsers();
       } else {
         toast({
           title: 'Error',
-          description: result.error || 'Failed to delete user',
-          variant: 'destructive'
+          description: json.error || 'Failed to delete user.',
+          variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
-        description: 'Failed to delete user',
-        variant: 'destructive'
+        description: 'Failed to delete user.',
+        variant: 'destructive',
       });
     }
   };
 
-  const openEditDialog = (user: User) => {
-    setSelectedUser(user);
-    setFormData({
-      displayName: user.displayName,
-      email: user.email,
-      role: user.role,
-      plan: user.plan,
-      apiKeyLimit: user.apiKeyLimit
-    });
-    setEditMode(true);
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (createMode) {
+      await handleCreateUser();
+    } else if (editMode) {
+      await handleUpdateUser();
+    }
   };
 
-  const getUsagePercentage = (user: User) => {
-    if (user.apiKeyLimit === 0) return 0;
-    return Math.round((user.apiKeyUsage / user.apiKeyLimit) * 100);
-  };
+  // ---------------------------------------------------------------------------
+  // Derived stats
+  // ---------------------------------------------------------------------------
+  const totalUsers = users.length;
+  const adminUsers = users.filter((u) => u.role === 'admin').length;
+  const activeUsers = users.filter((u) => u.isActive).length;
+  const totalUsage = users.reduce((sum, u) => sum + u.apiKeyUsage, 0);
 
+  const activePct =
+    totalUsers === 0 ? 0 : ((activeUsers / totalUsers) * 100).toFixed(1);
+  const adminPct =
+    totalUsers === 0 ? 0 : ((adminUsers / totalUsers) * 100).toFixed(1);
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">User Management</h1>
-          <Button onClick={fetchUsers} variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
-        
-        {/* Loading Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="pb-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                </div>
-              </CardContent>
-            </Card>
+      <div className="pt-4 space-y-8 animate-pulse">
+        <div className="h-6 bg-muted rounded w-40" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="h-24 bg-muted" />
           ))}
         </div>
+        <Card className="h-40 bg-muted" />
+        <Card className="h-64 bg-muted" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">User Management</h1>
-        <div className="flex items-center gap-4">
-          <Button onClick={fetchUsers} variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
+    <div className="pt-4 space-y-8">
+      {/* PAGE HEADER */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">User Management</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Monitor and manage user accounts, roles, and API usage.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={fetchUsers}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
             Refresh
           </Button>
-          <Button onClick={() => setCreateMode(true)} className="bg-blue-600 hover:bg-blue-700">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Create User
+          <Button
+            type="button"
+            size="sm"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            onClick={openCreateDialog}
+          >
+            <Plus className="w-4 h-4" />
+            Create user
           </Button>
         </div>
-      </div>
+      </header>
 
-      {/* Filters */}
+      {/* FILTERS */}
       <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Filters</CardTitle>
+          <CardDescription>
+            Quickly narrow down users by name, role, or subscription plan.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="search">Search</Label>
-              <Input
-                id="search"
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
-              />
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* Search */}
+            <div className="space-y-1 md:col-span-1">
+              <Label htmlFor="search" className="text-xs font-medium">
+                Search
+              </Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by name or email…"
+                  className="pl-9"
+                />
+              </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
+
+            {/* Role */}
+            <div className="space-y-1">
+              <Label className="text-xs font-medium">Role</Label>
+              <Select
+                value={roleFilter}
+                onValueChange={(value: 'all' | 'user' | 'admin') =>
+                  setRoleFilter(value)
+                }
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="All Roles" />
+                  <SelectValue placeholder="All roles" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="all">All roles</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="plan">Plan</Label>
-              <Select value={planFilter} onValueChange={setPlanFilter}>
+
+            {/* Plan */}
+            <div className="space-y-1">
+              <Label className="text-xs font-medium">Plan</Label>
+              <Select
+                value={planFilter}
+                onValueChange={(
+                  value:
+                    | 'all'
+                    | 'FREE'
+                    | 'STARTER'
+                    | 'PROFESSIONAL'
+                    | 'BUSINESS'
+                    | 'ENTERPRISE',
+                ) => setPlanFilter(value)}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="All Plans" />
+                  <SelectValue placeholder="All plans" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Plans</SelectItem>
+                  <SelectItem value="all">All plans</SelectItem>
                   <SelectItem value="FREE">FREE</SelectItem>
                   <SelectItem value="STARTER">STARTER</SelectItem>
                   <SelectItem value="PROFESSIONAL">PROFESSIONAL</SelectItem>
@@ -420,232 +504,318 @@ export default function AdminUsersPage() {
         </CardContent>
       </Card>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* STATS CARDS */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm">Total users</CardTitle>
+            <Users className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
+            <div className="text-3xl font-bold">{totalUsers}</div>
             <p className="text-xs text-muted-foreground">
-              {users.filter(u => u.role === 'admin').length} admins
+              {adminUsers} admins
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm">Active users</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter(u => u.isActive).length}</div>
+            <div className="text-3xl font-bold">{activeUsers}</div>
             <p className="text-xs text-muted-foreground">
-              {users.filter(u => u.isActive).length / users.length * 100}% of total
+              {activePct}% of total
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm">Admin users</CardTitle>
+            <Shield className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter(u => u.role === 'admin').length}</div>
+            <div className="text-3xl font-bold">{adminUsers}</div>
             <p className="text-xs text-muted-foreground">
-              {users.filter(u => u.role === 'admin').length / users.length * 100}% of total
+              {adminPct}% of total
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">API Usage</CardTitle>
-            <Key className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm">API usage</CardTitle>
+            <Key className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {users.reduce((sum, u) => sum + u.apiKeyUsage, 0).toLocaleString()}
+            <div className="text-3xl font-bold">
+              {totalUsage.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Total API calls
-            </p>
+            <p className="text-xs text-muted-foreground">Total API calls</p>
           </CardContent>
         </Card>
-      </div>
+      </section>
 
-      {/* Users List */}
+      {/* USERS TABLE */}
       <Card>
         <CardHeader>
-          <CardTitle>Users ({filteredUsers.length})</CardTitle>
+          <CardTitle className="text-base">
+            Users{' '}
+            <span className="font-normal text-muted-foreground">
+              ({filteredUsers.length})
+            </span>
+          </CardTitle>
           <CardDescription>
-            Manage user accounts, roles, and permissions
+            Manage user accounts, roles, and permissions.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left p-3 font-medium text-sm">User</th>
-                  <th className="text-left p-3 font-medium text-sm">Email</th>
-                  <th className="text-left p-3 font-medium text-sm">Role</th>
-                  <th className="text-left p-3 font-medium text-sm">Plan</th>
-                  <th className="text-left p-3 font-medium text-sm">API Usage</th>
-                  <th className="text-left p-3 font-medium text-sm">Status</th>
-                  <th className="text-left p-3 font-medium text-sm">Joined</th>
-                  <th className="text-left p-3 font-medium text-sm">Actions</th>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="min-w-[720px] w-full text-sm">
+              <thead className="bg-muted/60">
+                <tr>
+                  <th className="px-4 py-2 text-left font-medium text-xs uppercase tracking-wide text-muted-foreground">
+                    User
+                  </th>
+                  <th className="px-4 py-2 text-left font-medium text-xs uppercase tracking-wide text-muted-foreground">
+                    Email
+                  </th>
+                  <th className="px-4 py-2 text-left font-medium text-xs uppercase tracking-wide text-muted-foreground">
+                    Role
+                  </th>
+                  <th className="px-4 py-2 text-left font-medium text-xs uppercase tracking-wide text-muted-foreground">
+                    Plan
+                  </th>
+                  <th className="px-4 py-2 text-left font-medium text-xs uppercase tracking-wide text-muted-foreground">
+                    API usage
+                  </th>
+                  <th className="px-4 py-2 text-left font-medium text-xs uppercase tracking-wide text-muted-foreground">
+                    Status
+                  </th>
+                  <th className="px-4 py-2 text-left font-medium text-xs uppercase tracking-wide text-muted-foreground">
+                    Joined
+                  </th>
+                  <th className="px-4 py-2 text-right font-medium text-xs uppercase tracking-wide text-muted-foreground">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                    <td className="p-3">
+                  <tr
+                    key={user.id}
+                    className="border-t text-xs sm:text-sm hover:bg-muted/40"
+                  >
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                          <span className="text-xs font-medium text-gray-600">
-                            {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                          <span className="text-xs font-medium">
+                            {user.displayName?.charAt(0) ||
+                              user.email?.charAt(0) ||
+                              'U'}
                           </span>
                         </div>
-                        <div>
-                          <div className="font-medium text-sm">{user.displayName || 'Unknown User'}</div>
-                          <div className="text-xs text-gray-500">{user.email}</div>
+                        <div className="space-y-[1px]">
+                          <div className="font-medium">
+                            {user.displayName || 'Unknown user'}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {user.email}
+                          </div>
                         </div>
                       </div>
                     </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm">{user.email}</span>
+
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1 text-xs sm:text-sm">
+                        <Mail className="w-3 h-3 text-muted-foreground" />
+                        <span className="truncate max-w-[140px] sm:max-w-none">
+                          {user.email}
+                        </span>
                       </div>
                     </td>
-                    <td className="p-3">
-                      <Badge className={getRoleBadgeColor(user.role)}>
+
+                    <td className="px-4 py-3">
+                      <Badge className={cn('text-[11px]', getRoleBadgeColor(user.role))}>
                         {user.role}
                       </Badge>
                     </td>
-                    <td className="p-3">
-                      <Badge className={getPlanBadgeColor(user.plan)}>
+
+                    <td className="px-4 py-3">
+                      <Badge className={cn('text-[11px]', getPlanBadgeColor(user.plan))}>
                         {user.plan}
                       </Badge>
                     </td>
-                    <td className="p-3">
+
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm">{user.apiKeyUsage}/{user.apiKeyLimit}</span>
-                        <div className="w-16 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="h-2 rounded-full bg-blue-500"
+                        <span className="text-xs sm:text-sm">
+                          {user.apiKeyUsage}/{user.apiKeyLimit}
+                        </span>
+                        <div className="h-1.5 w-16 rounded-full bg-muted">
+                          <div
+                            className="h-1.5 rounded-full bg-blue-500"
                             style={{ width: `${getUsagePercentage(user)}%` }}
-                          ></div>
+                          />
                         </div>
                       </div>
                     </td>
-                    <td className="p-3">
-                      <Badge 
-                        variant={user.isActive ? 'default' : 'secondary'}
-                        className={user.isActive ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}
+
+                    <td className="px-4 py-3">
+                      <Badge
+                        className={cn(
+                          'text-[11px]',
+                          user.isActive
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-slate-100 text-slate-800',
+                        )}
                       >
                         {user.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </td>
-                    <td className="p-3 text-sm text-gray-600 dark:text-gray-400">
+
+                    <td className="px-4 py-3 text-xs sm:text-sm text-muted-foreground">
                       {formatDate(user.createdAt)}
                     </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
+
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-2">
                         <Button
+                          type="button"
                           variant="outline"
-                          size="sm"
+                          size="icon"
+                          className="h-8 w-8"
                           onClick={() => openEditDialog(user)}
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-3 h-3" />
                         </Button>
                         <Button
+                          type="button"
                           variant="outline"
-                          size="sm"
+                          size="icon"
+                          className="h-8 w-8 text-red-600 hover:text-red-700"
                           onClick={() => handleDeleteUser(user.id)}
-                          className="text-red-600 hover:text-red-700"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>
                     </td>
                   </tr>
                 ))}
+
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="px-4 py-6 text-center text-xs text-muted-foreground"
+                    >
+                      No users found. Adjust your filters or search query.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </CardContent>
       </Card>
 
-      {/* Create/Edit User Dialog */}
-      <Dialog open={createMode || editMode} onOpenChange={(open) => {
-        if (!open) {
-          setCreateMode(false);
-          setEditMode(false);
-          setSelectedUser(null);
-        }
-      }}>
-        <DialogContent className="sm:max-w-[500px]">
+      {/* CREATE / EDIT USER DIALOG */}
+      <Dialog
+        open={createMode || editMode}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCreateMode(false);
+            setEditMode(false);
+            setSelectedUser(null);
+            resetForm();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle>{createMode ? 'Create User' : 'Edit User'}</DialogTitle>
-            <DialogDescription>
-              {createMode ? 'Create a new user account' : 'Update user information'}
+            <DialogTitle className="text-base">
+              {createMode ? 'Create user' : 'Edit user'}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              {createMode
+                ? 'Create a new user account with an API limit and plan.'
+                : 'Update user details, role, and API limit.'}
             </DialogDescription>
           </DialogHeader>
-          
-          <form onSubmit={createMode ? handleCreateUser : handleUpdateUser} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="displayName">Display Name</Label>
+
+          <form onSubmit={handleFormSubmit} className="space-y-4">
+            <div className="space-y-1">
+              <Label htmlFor="displayName" className="text-xs">
+                Display name
+              </Label>
               <Input
                 id="displayName"
                 value={formData.displayName}
-                onChange={(e) => setFormData({...formData, displayName: e.target.value})}
+                onChange={(e) =>
+                  setFormData((f) => ({ ...f, displayName: e.target.value }))
+                }
                 placeholder="Enter display name"
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+
+            <div className="space-y-1">
+              <Label htmlFor="email" className="text-xs">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                placeholder="Enter email address"
+                onChange={(e) =>
+                  setFormData((f) => ({ ...f, email: e.target.value }))
+                }
+                placeholder="Enter email"
                 disabled={editMode}
               />
             </div>
-            
+
             {createMode && (
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  placeholder="Enter password"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="mt-2"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </Button>
+              <div className="space-y-1">
+                <Label htmlFor="password" className="text-xs">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData((f) => ({ ...f, password: e.target.value }))
+                    }
+                    placeholder="Set initial password"
+                    className="pr-9"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-2 flex items-center text-muted-foreground"
+                    onClick={() => setShowPassword((s) => !s)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
             )}
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs">Role</Label>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value: 'user' | 'admin') =>
+                    setFormData((f) => ({ ...f, role: value }))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -655,10 +825,20 @@ export default function AdminUsersPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="plan">Plan</Label>
-                <Select value={formData.plan} onValueChange={(value) => setFormData({...formData, plan: value})}>
+
+              <div className="space-y-1">
+                <Label className="text-xs">Plan</Label>
+                <Select
+                  value={formData.plan}
+                  onValueChange={(
+                    value:
+                      | 'FREE'
+                      | 'STARTER'
+                      | 'PROFESSIONAL'
+                      | 'BUSINESS'
+                      | 'ENTERPRISE',
+                  ) => setFormData((f) => ({ ...f, plan: value }))}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -672,20 +852,23 @@ export default function AdminUsersPage() {
                 </Select>
               </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="apiKeyLimit">API Key Limit</Label>
+
+            <div className="space-y-1">
+              <Label className="text-xs">API key limit</Label>
               <Input
-                id="apiKeyLimit"
                 type="number"
+                min={1}
                 value={formData.apiKeyLimit}
-                onChange={(e) => setFormData({...formData, apiKeyLimit: parseInt(e.target.value) || 20})}
-                placeholder="Enter API key limit"
-                min="1"
+                onChange={(e) =>
+                  setFormData((f) => ({
+                    ...f,
+                    apiKeyLimit: Number(e.target.value) || 1,
+                  }))
+                }
               />
             </div>
-            
-            <div className="flex justify-end gap-3 pt-4">
+
+            <div className="flex justify-end gap-2 pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -693,15 +876,17 @@ export default function AdminUsersPage() {
                   setCreateMode(false);
                   setEditMode(false);
                   setSelectedUser(null);
+                  resetForm();
                 }}
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={submitting}
-              >
-                {submitting ? 'Saving...' : (createMode ? 'Create' : 'Update')}
+              <Button type="submit" disabled={submitting}>
+                {submitting
+                  ? 'Saving…'
+                  : createMode
+                  ? 'Create user'
+                  : 'Save changes'}
               </Button>
             </div>
           </form>

@@ -13,8 +13,11 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   // Optimize chunk loading
-  experimental: {
+  experimental: { 
     optimizePackageImports: ['lucide-react', 'firebase', 'react'],
+  },
+  images: {
+    domains: ['152.42.229.232:1041'],
   },
 };
 
