@@ -107,7 +107,7 @@ export default function Docs() {
       {
         id: 'random',
         name: 'Random Content',
-        icon: <Image className="w-4 h-4" alt="Random content" />,
+        icon: <Image className="w-4 h-4" />,
         endpoints: endpointsData.result.random || [],
       },
       {

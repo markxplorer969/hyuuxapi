@@ -378,7 +378,7 @@ export default function AdminUsersPage() {
   // ---------------------------------------------------------------------------
   if (loading) {
     return (
-      <div className="pt-20 space-y-8 animate-pulse">
+      <div className="pt-4 space-y-8 animate-pulse">
         <div className="h-6 bg-muted rounded w-40" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
@@ -392,7 +392,7 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="pt-20 space-y-8">
+    <div className="pt-4 space-y-8">
       {/* PAGE HEADER */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
