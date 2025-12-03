@@ -36,7 +36,7 @@ export default function LoginPage() {
       setIsGoogleLoading(true);
       setError('');
       await signInWithGoogle();
-      router.push('/dashboard');
+      router.push('/docs');
     } catch (error: any) {
       setError(error.message || 'Failed to sign in with Google');
     } finally {
@@ -62,7 +62,7 @@ export default function LoginPage() {
         setIsSignUp(false);
       } else {
         await signInWithEmail(email, password);
-        router.push('/dashboard');
+        router.push('/docs');
       }
     } catch (error: any) {
       setError(error.message || `Failed to ${isSignUp ? 'create account' : 'sign in'}`);

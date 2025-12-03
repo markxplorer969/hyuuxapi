@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getApiKeyByKey, incrementApiKeyUsage } from '@/lib/apiKeys';
+import { adminDb, adminCollections, Timestamp } from '@/lib/firebase-admin';
 
 // This middleware validates API keys and enforces rate limits
 export async function apiKeyValidator(request: NextRequest) {
@@ -69,4 +70,29 @@ export function withApiKeyValidation(handler: (req: NextRequest, context?: any) 
     // Call the original handler
     return handler(request, context);
   };
+}
+
+export async function validateApiKey(apikey: string) {
+  const snap = await adminDb
+    .collection(adminCollections.apiKeys)
+    .where('key', '==', apikey)
+    .limit(1)
+    .get();
+
+  if (snap.empty) return { valid: false };
+
+  const doc = snap.docs[0];
+  const data = doc.data();
+
+  if (!data.isActive) return { valid: false };
+  if (data.usage >= data.limit) return { valid: false, limit: true };
+
+  return { valid: true, doc, data };
+}
+
+export async function increaseUsage(doc: any, current: number) {
+  await doc.ref.update({
+    usage: current + 1,
+    lastUsed: Timestamp.now()
+  });
 }

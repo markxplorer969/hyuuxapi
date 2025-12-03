@@ -5,7 +5,28 @@
       "desc": "OSS ai",
       "method": "GET",
       "status": "Active",
-      "path": "/api/ai/oss?text="
+      "path": "/api/ai/oss?text=&apikey="
+    },
+    {
+      "name": "Public AI",
+      "desc": "PublicAI chat generation",
+      "method": "POST",
+      "status": "Active",
+      "path": "/api/ai/publicai?question=&apikey="
+    },
+    {
+      "name": "Perplexed",
+      "desc": "Perplexed search + AI answer",
+      "method": "GET",
+      "status": "Active",
+      "path": "/api/ai/perplexed?text=&apikey="
+    },
+    {
+      "name": "Turboseek",
+      "desc": "Turboseek multi-step AI search",
+      "method": "GET",
+      "status": "Active",
+      "path": "/api/ai/turboseek?text=&apikey="
     }
   ],
   "downloader": [
@@ -14,67 +35,53 @@
       "desc": "Downloader capcut",
       "method": "GET",
       "status": "Active",
-      "path": "/api/download/capcut?url="
+      "path": "/api/download/capcut?url=&apikey"
     },
     {
       "name": "Facebook",
       "desc": "Downloader facebook",
       "method": "GET",
       "status": "Active",
-      "path": "/api/download/facebook?url="
+      "path": "/api/download/facebook?url=&apikey="
     },
     {
       "name": "SnackVideo",
       "desc": "Downloader snack video",
       "method": "GET",
       "status": "Active",
-      "path": "/api/download/snackvideo?url="
+      "path": "/api/download/snackvideo?url=&apikey="
     },
     {
       "name": "Twitter",
       "desc": "Downloader twitter",
       "method": "GET",
       "status": "Active",
-      "path": "/api/download/x?url="
+      "path": "/api/download/x?url=&apikey="
     },
     {
       "name": "Mediafire",
       "desc": "Downloader mediafire",
       "method": "GET",
       "status": "Active",
-      "path": "/api/download/mediafire?url="
+      "path": "/api/download/mediafire?url=&apikey="
     }
   ],
   "random": [
-    {
-      "name": "Blue Archive",
-      "desc": "Random foto blue archive",
-      "method": "GET",
-      "status": "Active",
-      "path": "/api/random/ba"
-    },
     {
       "name": "Random Waifu",
       "desc": "Random foto waifu",
       "method": "GET",
       "status": "Active",
-      "path": "/api/random/waifu"
-    },
-    {
-      "name": "Pap Ayang",
-      "desc": "Random pap ayang",
-      "method": "GET",
-      "status": "Active",
-      "path": "/api/random/papayang"
+      "path": "/api/random/waifu?apikey="
     }
   ],
   "tools": [
     {
-      "name": "Unblur",
-      "desc": "Convert image to unblur",
-      "method": "GET",
+      "name": "Website Screenshot",
+      "desc": "Full website screenshot using Imagy",
+      "method": "POST",
       "status": "Active",
-      "path": "/api/tools/unblur?url="
+      "path": "/api/tools/ssweb?url=&apikey="
     }
   ],
   "api": [

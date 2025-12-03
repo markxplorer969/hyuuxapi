@@ -1,0 +1,9 @@
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:1041
+   - Network:      http://0.0.0.0:1041
+
+ ✓ Starting...
+ ✓ Ready in 692ms
+(node:196) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:196) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.

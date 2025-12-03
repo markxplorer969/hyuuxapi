@@ -1,13 +1,18 @@
-import { PrismaClient } from '@prisma/client'
+// Database configuration using Firebase Firestore
+import { db } from './firebase';
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
+// Export Firestore database instance
+export { db };
 
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: ['query'],
-  })
+// Helper functions for common Firestore operations
+export const collections = {
+  users: 'users',
+  apiKeys: 'apiKeys',
+  posts: 'posts',
+  cache: 'cache',
+  analytics: 'analytics',
+  subscriptions: 'subscriptions'
+};
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+// Database is now fully managed through Firebase Firestore
+// No Prisma client needed anymore
