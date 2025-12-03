@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { name: 'Home', href: '/' },
+  { name: 'Dashboard', href: '/dashboard' },
   { name: 'Docs', href: '/docs' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Status', href: '/status' },

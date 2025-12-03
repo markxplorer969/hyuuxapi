@@ -357,62 +357,84 @@ export default function Home() {
             <div className="group relative animate-slide-in-up animate-delay-200">
               <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-green-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
               <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-xl border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-2">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-float delay-1000">
-                  <Shield className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-float">
+                  <Users className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-5xl font-bold text-green-600 dark:text-green-400 mb-2 tabular-nums">99.9%</div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Uptime SLA</div>
-                <div className="mt-4 text-xs text-green-600 dark:text-green-400 font-medium">Industry leading</div>
+                <div className="text-5xl font-bold text-green-600 dark:text-green-400 mb-2 tabular-nums">
+                  {animatedStats.developers}K+
+                </div>
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Developers</div>
+                <div className="mt-4 text-xs text-green-600 dark:text-green-400 font-medium animate-pulse">+8% this month</div>
               </div>
             </div>
 
             <div className="group relative animate-slide-in-up animate-delay-300">
               <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-purple-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
               <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-xl border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-2">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-float delay-2000">
-                  <Zap className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-float">
+                  <Globe className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-5xl font-bold text-purple-600 dark:text-purple-400 mb-2 tabular-nums">&lt;100ms</div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Avg Response</div>
-                <div className="mt-4 text-xs text-green-600 dark:text-green-400 font-medium">Lightning fast</div>
+                <div className="text-5xl font-bold text-purple-600 dark:text-purple-400 mb-2 tabular-nums">
+                  150+
+                </div>
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Countries</div>
+                <div className="mt-4 text-xs text-green-600 dark:text-green-400 font-medium animate-pulse">Global Reach</div>
               </div>
             </div>
 
             <div className="group relative animate-slide-in-up animate-delay-400">
               <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-orange-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
               <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-xl border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-2">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-float delay-3000">
-                  <Users className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 animate-float">
+                  <Server className="w-8 h-8 text-white" />
                 </div>
                 <div className="text-5xl font-bold text-orange-600 dark:text-orange-400 mb-2 tabular-nums">
-                  {animatedStats.developers}K+
+                  99.9%
                 </div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Happy Developers</div>
-                <div className="mt-4 text-xs text-green-600 dark:text-green-400 font-medium">Growing daily</div>
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">Uptime</div>
+                <div className="mt-4 text-xs text-green-600 dark:text-green-400 font-medium animate-pulse">Last 30 days</div>
               </div>
             </div>
           </div>
 
-          {/* Company Logos Section */}
-          <div className="text-center mb-12 animate-slide-in-up animate-delay-500">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-8">
-              Trusted by leading companies and startups
-            </p>
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-60 hover:opacity-100 transition-opacity duration-500">
-              {['TechCorp', 'DataFlow', 'CloudNine', 'StartupHub', 'InnoTech', 'DevStudio'].map((company, index) => (
-                <div key={index} className="relative group transform transition-all duration-300 hover:scale-110">
-                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-0 group-hover:opacity-20 transition duration-300"></div>
-                  <div className="relative px-6 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors duration-300">
-                    <span className="text-lg font-bold text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">{company}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* Testimonials */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="group">
+                <Card className="h-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
+                  <CardContent className="p-8">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                        {testimonial.avatar}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-900 dark:text-white">
+                          {testimonial.name}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {testimonial.role} at {testimonial.company}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-1 mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                    
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                      "{testimonial.content}"
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Tech Stack */}
+      {/* Technology Stack */}
       <div className="py-16 bg-gray-50 dark:bg-gray-900/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -422,96 +444,56 @@ export default function Home() {
               </span>
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Powered by the latest tools and frameworks
+              Powered by the latest and greatest in web development
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {techStack.map((tech, index) => (
-              <div key={index} className="text-center p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
-                <div className="flex justify-center mb-3">
+              <div key={index} className="text-center group">
+                <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   {tech.icon}
                 </div>
-                <div className="text-sm font-medium text-gray-900 dark:text-white">{tech.name}</div>
+                <div className={`font-medium ${tech.color}`}>
+                  {tech.name}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Testimonials */}
-      <div className="py-16 bg-white dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Loved by Developers
-              </span>
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              See what our users are saying about Slowly API
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl">
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl font-bold text-white">{testimonial.avatar}</span>
-                  </div>
-                  <div className="mb-4">
-                    <div className="flex items-center justify-center gap-1 mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {testimonial.name}
-                    </h3>
-                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-3">
-                      {testimonial.role} at {testimonial.company}
-                    </p>
-                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                      "{testimonial.content}"
-                    </p>
-                  </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {testimonial.project}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* CTA Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4 text-white">
+      <div className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
+        </div>
+        
+        <div className="relative container mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to Get Started?
           </h2>
-          <p className="text-xl text-white mb-8 max-w-3xl mx-auto opacity-90">
-            Join thousands of developers building amazing applications with Slowly API
+          <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+            Join thousands of developers who are already building amazing applications with Slowly API
           </p>
+          
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              variant="secondary"
-              className="flex items-center gap-2 border-white text-white hover:bg-white hover:text-gray-900 font-semibold py-4 px-8 shadow-lg"
+              className="bg-white text-blue-600 hover:bg-gray-100 font-semibold py-4 px-8"
               onClick={() => window.location.href = '/docs'}
             >
-              <Globe className="w-5 h-5" />
+              <Terminal className="w-5 h-5 mr-2" />
               View Documentation
             </Button>
             <Button
               size="lg"
-              className="flex items-center gap-2 bg-white text-blue-600 hover:bg-blue-700 hover:text-white font-semibold py-4 px-8"
+              className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold py-4 px-8"
               onClick={() => window.location.href = '/pricing'}
             >
-              <Rocket className="w-5 h-5" />
-              Get Started
+              <Rocket className="w-5 h-5 mr-2" />
+              Get Started Free
             </Button>
           </div>
         </div>
