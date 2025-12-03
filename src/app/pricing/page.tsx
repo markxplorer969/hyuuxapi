@@ -45,7 +45,7 @@ const PRICING_PLANS: PricingPlan[] = [
     customApikey: false
   },
   {
-    name: 'STARTER',
+    name: 'CHEAP',
     price: '$9.99',
     limit: '1k',
     description: 'Great for small projects and startups',
@@ -66,12 +66,12 @@ const PRICING_PLANS: PricingPlan[] = [
     customApikey: true
   },
   {
-    name: 'PROFESSIONAL',
+    name: 'PREMIUM',
     price: '$29.99',
-    limit: '5k',
+    limit: '2.5k',
     description: 'Perfect for growing businesses',
     features: [
-      '5,000 Requests per day',
+      '2,500 Requests per day',
       'All AI Models + Advanced',
       'Priority Email Support',
       'Advanced Analytics Dashboard',
@@ -88,20 +88,19 @@ const PRICING_PLANS: PricingPlan[] = [
     customApikey: true
   },
   {
-    name: 'BUSINESS',
+    name: 'VIP',
     price: '$79.99',
-    limit: '20k',
+    limit: '5k',
     description: 'Ideal for established businesses',
     features: [
-      '20,000 Requests per day',
+      '5,000 Requests per day',
       'All AI Models + Beta Access',
       '24/7 Priority Support',
-      'Real-time Analytics',
+      'Advanced Analytics',
       '99.99% Uptime SLA',
       'Custom API Key',
       'Advanced Webhooks',
-      'Team Collaboration Tools',
-      'White-label Options'
+      'Team Collaboration Tools'
     ],
     cta: 'Get Started',
     popular: false,
@@ -112,28 +111,51 @@ const PRICING_PLANS: PricingPlan[] = [
     customApikey: true
   },
   {
-    name: 'ENTERPRISE',
+    name: 'VVIP',
     price: '$199.99',
-    limit: 'Unlimited',
+    limit: '10k',
     description: 'For large-scale operations',
     features: [
-      'Unlimited Requests',
+      '10,000 Requests per day',
       'All AI Models + Exclusive Access',
-      'Dedicated Account Manager',
+      'Dedicated Support',
       'Custom Analytics Dashboard',
       '99.99% Uptime Guarantee',
       'Custom API Key',
       'Advanced Webhooks',
       'Team Collaboration Tools',
-      'White-label Solutions',
-      'SLA Guarantee',
+      'White-label Options'
+    ],
+    cta: 'Get Started',
+    popular: false,
+    highlight: false,
+    icon: <Sparkles className="w-6 h-6" />,
+    badge: 'Enterprise Grade',
+    savings: 'Save 20% annually',
+    customApikey: true
+  },
+  {
+    name: 'SUPREME',
+    price: '$499.99',
+    limit: '20k',
+    description: 'Maximum power and flexibility',
+    features: [
+      '20,000 Requests per day',
+      'All AI Models + Exclusive Access',
+      'White-glove Support',
+      'Unlimited Access',
+      'Custom Analytics Dashboard',
+      '99.99% Uptime Guarantee',
+      'Custom API Key',
+      'Advanced Webhooks',
+      'Team Collaboration Tools',
       'On-premise Deployment Option'
     ],
     cta: 'Contact Sales',
     popular: false,
     highlight: false,
     icon: <Zap className="w-6 h-6" />,
-    badge: 'Enterprise Grade',
+    badge: 'Ultimate Power',
     savings: 'Best value',
     customApikey: true
   }

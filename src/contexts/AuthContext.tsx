@@ -28,7 +28,7 @@ interface User {
   displayName: string | null;
   photoURL: string | null;
   role: 'user' | 'admin';
-  plan: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE';
+  plan: 'FREE' | 'CHEAP' | 'PREMIUM' | 'VIP' | 'VVIP' | 'SUPREME';
   apiKey?: string;
   apiKeyId?: string;
   apiKeyLimit?: number;

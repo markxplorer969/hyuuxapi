@@ -258,6 +258,19 @@ export default function DashboardPage() {
     { name: 'shadcn/ui', role: 'UI Components' }
   ];
 
+  // Plan information
+  const getPlanInfo = (plan: string) => {
+    const planInfo = {
+      FREE: { name: 'Free', limit: 20, color: 'text-gray-600' },
+      CHEAP: { name: 'Cheap', limit: 1000, color: 'text-blue-600' },
+      PREMIUM: { name: 'Premium', limit: 2500, color: 'text-purple-600' },
+      VIP: { name: 'VIP', limit: 5000, color: 'text-amber-600' },
+      VVIP: { name: 'VVIP', limit: 10000, color: 'text-red-600' },
+      SUPREME: { name: 'Supreme', limit: 20000, color: 'text-gradient-to-r from-purple-600 to-pink-600' }
+    };
+    return planInfo[plan as keyof typeof planInfo] || planInfo.FREE;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -550,7 +563,15 @@ export default function DashboardPage() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Account Type</span>
-                  <Badge variant="secondary">{user?.plan || 'FREE'}</Badge>
+                  <Badge variant="secondary" className={getPlanInfo(user?.plan || 'FREE').color}>
+                    {getPlanInfo(user?.plan || 'FREE').name}
+                  </Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Daily Limit</span>
+                  <span className="text-sm font-medium">
+                    {getPlanInfo(user?.plan || 'FREE').limit.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Member Since</span>

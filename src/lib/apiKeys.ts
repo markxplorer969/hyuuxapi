@@ -6,7 +6,7 @@ export interface ApiKey {
   key: string;
   userId: string;
   name?: string;
-  role: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE';
+  role: 'FREE' | 'CHEAP' | 'PREMIUM' | 'VIP' | 'VVIP' | 'SUPREME';
   limit: number;
   usage: number;
   lastUsed?: Date;
@@ -18,10 +18,11 @@ export interface ApiKey {
 // User role to limit mapping
 export const ROLE_LIMITS: Record<string, number> = {
   FREE: 20,
-  STARTER: 1000,
-  PROFESSIONAL: 5000,
-  BUSINESS: 20000,
-  ENTERPRISE: 100000,
+  CHEAP: 1000,
+  PREMIUM: 2500,
+  VIP: 5000,
+  VVIP: 10000,
+  SUPREME: 20000,
 };
 
 // Generate a secure random API key
@@ -40,7 +41,7 @@ export function generateApiKey(length: number = 32): string {
 // Create a new API key for a user
 export async function createApiKey(
   userId: string, 
-  role: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE' = 'FREE',
+  role: 'FREE' | 'CHEAP' | 'PREMIUM' | 'VIP' | 'VVIP' | 'SUPREME' = 'FREE',
   custom: boolean = false,
   name?: string
 ): Promise<string> {

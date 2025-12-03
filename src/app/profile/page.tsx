@@ -299,10 +299,11 @@ export default function ProfilePage() {
   const getRoleColor = (plan: string) => {
     switch (plan) {
       case 'FREE': return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-      case 'STARTER': return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200';
-      case 'PROFESSIONAL': return 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200';
-      case 'BUSINESS': return 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-200';
-      case 'ENTERPRISE': return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200';
+      case 'CHEAP': return 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200';
+      case 'PREMIUM': return 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200';
+      case 'VIP': return 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-200';
+      case 'VVIP': return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200';
+      case 'SUPREME': return 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 dark:from-purple-800 dark:to-pink-800 dark:text-purple-200';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
     }
   };
@@ -312,29 +313,6 @@ export default function ProfilePage() {
     const limit = user?.apiKeyLimit || 20;
     if (limit === 0) return 0;
     return Math.round((usage / limit) * 100);
-  };
-
-  // Mock user data - Update with new plan structure
-  const userStats = {
-    apiCalls: 1234,
-    lastLogin: new Date(),
-    joinDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-    plan: {
-      name: user?.plan || 'FREE',
-      price: user?.plan === 'FREE' ? '$0' : 
-               user?.plan === 'STARTER' ? '$9.99' :
-               user?.plan === 'PROFESSIONAL' ? '$29.99' :
-               user?.plan === 'BUSINESS' ? '$79.99' :
-               user?.plan === 'ENTERPRISE' ? '$199.99' : '$0',
-      features: user?.plan === 'FREE' ? ['20 API calls/day', 'Basic endpoints'] :
-                user?.plan === 'STARTER' ? ['1K API calls/day', 'All endpoints', 'Email support'] :
-                user?.plan === 'PROFESSIONAL' ? ['5K API calls/day', 'Priority support', 'Advanced features'] :
-                user?.plan === 'BUSINESS' ? ['20K API calls/day', '24/7 support', 'Advanced analytics'] :
-                user?.plan === 'ENTERPRISE' ? ['Unlimited API calls', 'Dedicated support', 'Custom solutions'] : ['Basic features'],
-      status: 'Active',
-      expires: user?.plan === 'FREE' ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now for paid plans
-    },
-    status: 'Active'
   };
 
   return (
@@ -446,7 +424,7 @@ export default function ProfilePage() {
                       <Zap className="w-4 h-4 text-gray-400" />
                       <div>
                         <p className="text-sm text-gray-500">Current Plan</p>
-                        <p className="font-medium">{userStats.plan.name}</p>
+                        <p className="font-medium">{user?.plan || 'FREE'}</p>
                       </div>
                     </div>
                   </div>
@@ -743,24 +721,24 @@ export default function ProfilePage() {
                 <CardContent className="space-y-4">
                   <div className="text-center p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
                     <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                      {userStats.plan.name}
+                      {user?.plan || 'FREE'}
                     </div>
                     <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                      {userStats.plan.price}/month
+                      {getPlanInfo(user?.plan || 'FREE').price}/month
                     </div>
                     <Badge variant="secondary" className="mb-4">
-                      {userStats.plan.status}
+                      Active
                     </Badge>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500">API Calls Remaining</span>
-                      <span className="font-medium">87,456</span>
+                      <span className="font-medium">{Math.max(0, (user?.apiKeyLimit || 20) - (user?.apiKeyUsage || 0))}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500">Plan Expires</span>
-                      <span className="font-medium">{formatDate(userStats.plan.expires)}</span>
+                      <span className="font-medium">Never</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500">Auto Renew</span>
@@ -773,7 +751,7 @@ export default function ProfilePage() {
                   <div className="space-y-2">
                     <h4 className="font-medium mb-3">Plan Features</h4>
                     <div className="space-y-2">
-                      {userStats.plan.features.map((feature, index) => (
+                      {getPlanInfo(user?.plan || 'FREE').features.map((feature, index) => (
                         <div key={index} className="flex items-center gap-2">
                           <CheckCircle className="w-4 h-4 text-green-500" />
                           <span className="text-sm">{feature}</span>
