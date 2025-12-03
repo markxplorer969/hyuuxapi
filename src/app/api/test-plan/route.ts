@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate plan type
-    const validPlans = ['FREE', 'STARTER', 'PROFESSIONAL', 'BUSINESS', 'ENTERPRISE'];
+    const validPlans = ['FREE', 'CHEAP', 'PREMIUM', 'VIP', 'VVIP', 'SUPREME'];
     if (!validPlans.includes(plan)) {
       return NextResponse.json(
         { error: 'Invalid plan type' },

@@ -341,7 +341,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      {/* Add padding-top to account for fixed navbar */}
+      <div className="pt-20">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Connection Status Indicator */}
         {!isOnline && (
           <Alert className="mb-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
@@ -842,6 +844,8 @@ export default function ProfilePage() {
             </div>
           </TabsContent>
         </Tabs>
+      </div>
+    </div>
       </div>
     </div>
   );

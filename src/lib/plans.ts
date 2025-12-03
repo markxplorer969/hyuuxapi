@@ -33,8 +33,8 @@ export const PLANS: PlanConfig[] = [
     gradient: 'from-gray-500 to-gray-700'
   },
   {
-    id: 'STARTER',
-    name: 'Starter',
+    id: 'CHEAP',
+    name: 'Cheap',
     price: 9.99,
     duration: 30,
     features: [
@@ -53,19 +53,19 @@ export const PLANS: PlanConfig[] = [
     popular: true
   },
   {
-    id: 'PROFESSIONAL',
-    name: 'Professional',
+    id: 'PREMIUM',
+    name: 'Premium',
     price: 29.99,
     duration: 30,
     features: [
-      '5,000 API calls per day',
+      '2,500 API calls per day',
       'All endpoints access',
       'Priority support',
       'Advanced analytics',
       'Custom integrations',
       '99.95% uptime SLA'
     ],
-    apiLimit: 5000,
+    apiLimit: 2500,
     storageLimit: 2000,
     bandwidthLimit: 20,
     description: 'Perfect for growing businesses',
@@ -73,12 +73,12 @@ export const PLANS: PlanConfig[] = [
     gradient: 'from-purple-500 to-purple-700'
   },
   {
-    id: 'BUSINESS',
-    name: 'Business',
+    id: 'VIP',
+    name: 'VIP',
     price: 79.99,
     duration: 30,
     features: [
-      '20,000 API calls per day',
+      '5,000 API calls per day',
       'All endpoints access',
       '24/7 phone support',
       'Real-time analytics',
@@ -86,7 +86,7 @@ export const PLANS: PlanConfig[] = [
       'White-label options',
       '99.99% uptime SLA'
     ],
-    apiLimit: 20000,
+    apiLimit: 5000,
     storageLimit: 5000,
     bandwidthLimit: 50,
     description: 'Ideal for established businesses',
@@ -94,12 +94,12 @@ export const PLANS: PlanConfig[] = [
     gradient: 'from-amber-500 to-amber-700'
   },
   {
-    id: 'ENTERPRISE',
-    name: 'Enterprise',
+    id: 'VVIP',
+    name: 'VVIP',
     price: 199.99,
     duration: 30,
     features: [
-      'Unlimited API calls',
+      '10,000 API calls per day',
       'All endpoints access',
       'Dedicated support',
       'Real-time analytics',
@@ -108,7 +108,7 @@ export const PLANS: PlanConfig[] = [
       'SLA guarantee',
       'On-premise deployment option'
     ],
-    apiLimit: 100000,
+    apiLimit: 10000,
     storageLimit: 10000,
     bandwidthLimit: 100,
     description: 'For large-scale operations',
@@ -116,21 +116,25 @@ export const PLANS: PlanConfig[] = [
     gradient: 'from-red-500 to-red-700'
   },
   {
-    id: 'CUSTOM',
-    name: 'Custom',
-    price: 0,
-    duration: 0,
+    id: 'SUPREME',
+    name: 'Supreme',
+    price: 399.99,
+    duration: 30,
     features: [
-      'Tailored solutions',
-      'Custom limits',
-      'Dedicated infrastructure',
-      'Custom SLA',
-      'Personal support'
+      '20,000 API calls per day',
+      'All endpoints access',
+      'Dedicated support',
+      'Real-time analytics',
+      'Custom integrations',
+      'White-label options',
+      'SLA guarantee',
+      'On-premise deployment option',
+      'Unlimited storage'
     ],
-    apiLimit: 0,
-    storageLimit: 0,
-    bandwidthLimit: 0,
-    description: 'Contact us for custom solutions',
+    apiLimit: 20000,
+    storageLimit: 20000,
+    bandwidthLimit: 200,
+    description: 'Ultimate plan for enterprise needs',
     color: 'text-indigo-600',
     gradient: 'from-indigo-500 to-indigo-700'
   }

@@ -50,7 +50,7 @@ interface User {
   displayName: string;
   email: string;
   role: 'user' | 'admin';
-  plan: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE' | 'CUSTOM';
+  plan: 'FREE' | 'CHEAP' | 'PREMIUM' | 'VIP' | 'VVIP' | 'SUPREME';
   apiKeyUsage: number;
   apiKeyLimit: number;
   createdAt: any;
@@ -63,7 +63,7 @@ type FormState = {
   email: string;
   password: string;
   role: 'user' | 'admin';
-  plan: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE' | 'CUSTOM';
+  plan: 'FREE' | 'CHEAP' | 'PREMIUM' | 'VIP' | 'VVIP' | 'SUPREME';
   apiKeyLimit: number;
 };
 
@@ -75,7 +75,7 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
   const [planFilter, setPlanFilter] = useState<
-    'all' | 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE' | 'CUSTOM'
+    'all' | 'FREE' | 'CHEAP' | 'PREMIUM' | 'VIP' | 'VVIP' | 'SUPREME'
   >('all');
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -113,15 +113,15 @@ export default function AdminUsersPage() {
     switch (plan) {
       case 'FREE':
         return 'bg-slate-100 text-slate-800';
-      case 'STARTER':
+      case 'CHEAP':
         return 'bg-blue-100 text-blue-800';
-      case 'PROFESSIONAL':
+      case 'PREMIUM':
         return 'bg-purple-100 text-purple-800';
-      case 'BUSINESS':
+      case 'VIP':
         return 'bg-amber-100 text-amber-800';
-      case 'ENTERPRISE':
+      case 'VVIP':
         return 'bg-red-100 text-red-800';
-      case 'CUSTOM':
+      case 'SUPREME':
         return 'bg-indigo-100 text-indigo-800';
       default:
         return 'bg-slate-100 text-slate-800';
@@ -499,11 +499,11 @@ export default function AdminUsersPage() {
                   value:
                     | 'all'
                     | 'FREE'
-                    | 'STARTER'
-                    | 'PROFESSIONAL'
-                    | 'BUSINESS'
-                    | 'ENTERPRISE'
-                    | 'CUSTOM',
+                    | 'CHEAP'
+                    | 'PREMIUM'
+                    | 'VIP'
+                    | 'VVIP'
+                    | 'SUPREME',
                 ) => setPlanFilter(value)}
               >
                 <SelectTrigger>
@@ -512,11 +512,11 @@ export default function AdminUsersPage() {
                 <SelectContent>
                   <SelectItem value="all">All plans</SelectItem>
                   <SelectItem value="FREE">FREE</SelectItem>
-                  <SelectItem value="STARTER">STARTER</SelectItem>
-                  <SelectItem value="PROFESSIONAL">PROFESSIONAL</SelectItem>
-                  <SelectItem value="BUSINESS">BUSINESS</SelectItem>
-                  <SelectItem value="ENTERPRISE">ENTERPRISE</SelectItem>
-                  <SelectItem value="CUSTOM">CUSTOM</SelectItem>
+                  <SelectItem value="CHEAP">CHEAP</SelectItem>
+                  <SelectItem value="PREMIUM">PREMIUM</SelectItem>
+                  <SelectItem value="VIP">VIP</SelectItem>
+                  <SelectItem value="VVIP">VVIP</SelectItem>
+                  <SelectItem value="SUPREME">SUPREME</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -857,11 +857,11 @@ export default function AdminUsersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="FREE">FREE</SelectItem>
-                    <SelectItem value="STARTER">STARTER</SelectItem>
-                    <SelectItem value="PROFESSIONAL">PROFESSIONAL</SelectItem>
-                    <SelectItem value="BUSINESS">BUSINESS</SelectItem>
-                    <SelectItem value="ENTERPRISE">ENTERPRISE</SelectItem>
-                    <SelectItem value="CUSTOM">CUSTOM</SelectItem>
+                    <SelectItem value="CHEAP">CHEAP</SelectItem>
+                    <SelectItem value="PREMIUM">PREMIUM</SelectItem>
+                    <SelectItem value="VIP">VIP</SelectItem>
+                    <SelectItem value="VVIP">VVIP</SelectItem>
+                    <SelectItem value="SUPREME">SUPREME</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

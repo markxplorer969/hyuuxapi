@@ -349,7 +349,9 @@ export default function AdminApiKeysPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* Add padding-top to account for fixed navbar */}
+      <div className="pt-20">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Button
@@ -735,6 +737,8 @@ export default function AdminApiKeysPage() {
             )}
           </CardContent>
         </Card>
+      </div>
+    </div>
       </div>
     </div>
   );

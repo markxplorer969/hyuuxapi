@@ -11,11 +11,11 @@ export async function GET() {
         categories: [
           {
             name: 'Individual',
-            plans: PLANS.filter(plan => ['FREE', 'STARTER', 'PROFESSIONAL'].includes(plan.id))
+            plans: PLANS.filter(plan => ['FREE', 'CHEAP', 'PREMIUM'].includes(plan.id))
           },
           {
             name: 'Business',
-            plans: PLANS.filter(plan => ['BUSINESS', 'ENTERPRISE'].includes(plan.id))
+            plans: PLANS.filter(plan => ['VIP', 'VVIP', 'SUPREME'].includes(plan.id))
           }
         ]
       }

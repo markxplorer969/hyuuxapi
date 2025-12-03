@@ -266,10 +266,11 @@ export async function DELETE(request: NextRequest) {
 function getPlanLimit(plan: string): number {
   const limits = {
     FREE: 20,
-    STARTER: 1000,
-    PROFESSIONAL: 5000,
-    BUSINESS: 20000,
-    ENTERPRISE: 100000
+    CHEAP: 1000,
+    PREMIUM: 2500,
+    VIP: 5000,
+    VVIP: 10000,
+    SUPREME: 20000
   };
   return limits[plan] || 20;
 }
