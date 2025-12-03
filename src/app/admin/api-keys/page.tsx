@@ -737,8 +737,7 @@ export default function AdminApiKeysPage() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
+        </div>
       </div>
     </div>
   );

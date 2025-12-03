@@ -1,4 +1,4 @@
-// firebase.ts (SAFE for Next.js App Router)
+// firebase.ts (Client-side Firebase configuration)
 import { initializeApp } from "firebase/app";
 import { 
   getAuth,
@@ -25,17 +25,17 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:188778202454:web:df5b9f443a6fd27ed542f7"
 };
 
-// Initialize core Firebase services
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Google provider
-export const googleProvider = new GoogleAuthProvider();
+const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
-// 🔥 SAFE ANALYTICS LOADER — DO NOT EXPORT THE VARIABLE
+// Analytics loader for client-side only
 export async function loadAnalytics() {
   if (typeof window === "undefined") return null;
 
@@ -69,11 +69,31 @@ export const logoutUser = async () => {
   return signOut(auth);
 };
 
-export { onAuthStateChanged };
+// Export Firebase instances and functions
+export { 
+  app, 
+  auth, 
+  db, 
+  storage, 
+  googleProvider,
+  onAuthStateChanged,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  increment,
+  orderBy,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut
+};
+
 export type { FirebaseUser };
-
-// Export Firestore functions
-export { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs, updateDoc, increment, orderBy };
-
-// Export Auth functions
-export { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut };
