@@ -38,6 +38,7 @@ import {
   Monitor
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PLANS, getPlanById } from '@/lib/plans';
 
 export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +62,29 @@ export default function ProfilePage() {
   const [usageLoading, setUsageLoading] = useState(false);
   const { user, logout, getDailyUsage, regenerateApiKey: regenerateApiKeyFromContext } = useAuth();
   const router = useRouter();
+
+  // Create userStats object from user data
+  const userStats = {
+    status: user ? 'Active' : 'Inactive',
+    joinDate: user ? new Date() : new Date(), // You might want to store this in user profile
+    lastLogin: user ? new Date() : new Date() // You might want to track this in user profile
+  };
+
+  // Get plan information function
+  const getPlanInfo = (planId: string) => {
+    const plan = getPlanById(planId);
+    if (!plan) {
+      // Return default plan info if not found
+      return {
+        price: 0,
+        features: ['Basic features']
+      };
+    }
+    return {
+      price: plan.price,
+      features: plan.features
+    };
+  };
 
   // Fetch daily usage when user is loaded
   useEffect(() => {

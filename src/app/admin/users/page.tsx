@@ -43,13 +43,14 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { PLANS, getPlanById } from '@/lib/plans';
 
 interface User {
   id: string;
   displayName: string;
   email: string;
   role: 'user' | 'admin';
-  plan: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE';
+  plan: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE' | 'CUSTOM';
   apiKeyUsage: number;
   apiKeyLimit: number;
   createdAt: any;
@@ -62,7 +63,7 @@ type FormState = {
   email: string;
   password: string;
   role: 'user' | 'admin';
-  plan: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE';
+  plan: 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE' | 'CUSTOM';
   apiKeyLimit: number;
 };
 
@@ -74,7 +75,7 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
   const [planFilter, setPlanFilter] = useState<
-    'all' | 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE'
+    'all' | 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'BUSINESS' | 'ENTERPRISE' | 'CUSTOM'
   >('all');
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -113,13 +114,15 @@ export default function AdminUsersPage() {
       case 'FREE':
         return 'bg-slate-100 text-slate-800';
       case 'STARTER':
-        return 'bg-emerald-100 text-emerald-800';
-      case 'PROFESSIONAL':
         return 'bg-blue-100 text-blue-800';
+      case 'PROFESSIONAL':
+        return 'bg-purple-100 text-purple-800';
       case 'BUSINESS':
         return 'bg-amber-100 text-amber-800';
       case 'ENTERPRISE':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-red-100 text-red-800';
+      case 'CUSTOM':
+        return 'bg-indigo-100 text-indigo-800';
       default:
         return 'bg-slate-100 text-slate-800';
     }
@@ -156,6 +159,21 @@ export default function AdminUsersPage() {
   const getUsagePercentage = (user: User) => {
     if (!user.apiKeyLimit) return 0;
     return Math.min(100, Math.round((user.apiKeyUsage / user.apiKeyLimit) * 100));
+  };
+
+  // Get API limit based on plan
+  const getApiLimitForPlan = (planId: string): number => {
+    const plan = getPlanById(planId);
+    return plan ? plan.apiLimit : 20; // Default to FREE plan limit
+  };
+
+  // Update API limit when plan changes
+  const handlePlanChange = (planId: string) => {
+    setFormData((f) => ({ 
+      ...f, 
+      plan: planId as any,
+      apiKeyLimit: getApiLimitForPlan(planId)
+    }));
   };
 
   // ---------------------------------------------------------------------------
@@ -484,7 +502,8 @@ export default function AdminUsersPage() {
                     | 'STARTER'
                     | 'PROFESSIONAL'
                     | 'BUSINESS'
-                    | 'ENTERPRISE',
+                    | 'ENTERPRISE'
+                    | 'CUSTOM',
                 ) => setPlanFilter(value)}
               >
                 <SelectTrigger>
@@ -497,6 +516,7 @@ export default function AdminUsersPage() {
                   <SelectItem value="PROFESSIONAL">PROFESSIONAL</SelectItem>
                   <SelectItem value="BUSINESS">BUSINESS</SelectItem>
                   <SelectItem value="ENTERPRISE">ENTERPRISE</SelectItem>
+                  <SelectItem value="CUSTOM">CUSTOM</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -830,14 +850,7 @@ export default function AdminUsersPage() {
                 <Label className="text-xs">Plan</Label>
                 <Select
                   value={formData.plan}
-                  onValueChange={(
-                    value:
-                      | 'FREE'
-                      | 'STARTER'
-                      | 'PROFESSIONAL'
-                      | 'BUSINESS'
-                      | 'ENTERPRISE',
-                  ) => setFormData((f) => ({ ...f, plan: value }))}
+                  onValueChange={handlePlanChange}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -848,6 +861,7 @@ export default function AdminUsersPage() {
                     <SelectItem value="PROFESSIONAL">PROFESSIONAL</SelectItem>
                     <SelectItem value="BUSINESS">BUSINESS</SelectItem>
                     <SelectItem value="ENTERPRISE">ENTERPRISE</SelectItem>
+                    <SelectItem value="CUSTOM">CUSTOM</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
