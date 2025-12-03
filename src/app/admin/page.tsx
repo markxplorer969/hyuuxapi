@@ -56,7 +56,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="pt-4 space-y-10 animate-pulse">
+      <div className="pt-20 space-y-10 animate-pulse">
         <div className="h-6 bg-muted rounded w-40" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(i => (
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="pt-4 space-y-10">
+    <div className="pt-20 space-y-10">
       {/* PAGE HEADER */}
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Dashboard overview</h1>
