@@ -24,6 +24,12 @@ const navItems = [
   { name: 'Status', href: '/status' },
 ];
 
+const userNavItems = [
+  { name: 'Dashboard', href: '/dashboard' },
+  { name: 'API Keys', href: '/api-keys' },
+  { name: 'Profile', href: '/profile' },
+];
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -112,6 +118,14 @@ export default function Navbar() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => router.push('/dashboard')} className="cursor-pointer">
+                        <User className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => router.push('/api-keys')} className="cursor-pointer">
+                        <User className="w-4 h-4 mr-2" />
+                        API Keys
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => router.push('/profile')} className="cursor-pointer">
                         <User className="w-4 h-4 mr-2" />
                         Profile
@@ -232,6 +246,14 @@ export default function Navbar() {
                           <div className="w-full h-9 bg-muted animate-pulse rounded-lg" />
                         ) : user ? (
                           <>
+                            <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/dashboard')}>
+                              <User className="w-4 h-4 mr-2" />
+                              Dashboard
+                            </Button>
+                            <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/api-keys')}>
+                              <User className="w-4 h-4 mr-2" />
+                              API Keys
+                            </Button>
                             <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/profile')}>
                               <User className="w-4 h-4 mr-2" />
                               Profile
