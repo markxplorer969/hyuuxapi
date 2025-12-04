@@ -31,6 +31,13 @@
   ],
   "downloader": [
     {
+      "name": "All-in-One",
+      "desc": "Universal downloader for multiple platforms (X, Facebook, Instagram, TikTok, YouTube, etc.)",
+      "method": "GET, POST",
+      "status": "Active",
+      "path": "/api/download/allinone?url=&apikey="
+    },
+    {
       "name": "Capcut",
       "desc": "Downloader capcut",
       "method": "GET",
