@@ -64,7 +64,7 @@ export default function PricingPage() {
         
         // Handle specific error cases
         if (data.error?.includes('Unauthorized IP') || data.error?.includes('Whitelist IP')) {
-          alert('Payment Error: Server IP is not whitelisted. Please contact the administrator to add IP 8.217.199.231 to Tripay merchant whitelist.');
+          alert('Payment Error: Server IP is not whitelisted. Please contact the administrator to add IP web to Tripay merchant whitelist.');
         } else if (data.error?.includes('Sandbox') || data.error?.includes('credential')) {
           alert('Payment Configuration Error: Please check Tripay credentials and environment settings.');
         } else {
@@ -83,7 +83,7 @@ export default function PricingPage() {
   };
 
   const handleContactDev = () => {
-    window.open('https://wa.me/6285123456', '_blank');
+    window.open('https://wa.me/6285883795285', '_blank');
   };
 
   return (

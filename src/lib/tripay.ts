@@ -61,8 +61,8 @@ export class Tripay {
             quantity: 1,
           },
         ],
-        callback_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment/callback`,
-        return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success`,
+        callback_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/payment/callback`,
+        return_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/payment/success`,
         signature: this.generateSignature(merchant_ref, amountInt),
       };
 
