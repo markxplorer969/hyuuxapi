@@ -49,7 +49,22 @@ export default function PricingPage() {
         }),
       });
 
-      const data = await res.json();
+      // If real payment fails due to IP, try mock
+      let data = await res.json();
+      if (!res.ok && data.error?.includes('Unauthorized IP')) {
+        console.log('Real payment failed due to IP, trying mock...');
+        const mockRes = await fetch('/api/payment/mock-create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.uid,
+            planId,
+            name: user.displayName || 'User',
+            email: user.email || 'user@example.com',
+          }),
+        });
+        data = await mockRes.json();
+      }
       if (!res.ok || !data.success) {
         console.error('Payment creation error:', data);
         

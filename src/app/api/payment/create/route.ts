@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { Tripay } from "@/lib/tripay";
 import { adminDb } from "@/lib/firebase-admin";
 import { getPlanById } from "@/lib/plans";
+import { logPlanPurchaseToDiscord } from "@/lib/discord";
 
 export async function POST(req: Request) {
   try {
@@ -28,6 +29,24 @@ export async function POST(req: Request) {
       amount: amountInIDR,
       customer_name: name,
       customer_email: email,
+    });
+
+    // Get client IP for logging
+    const clientIP = req.headers.get('x-forwarded-for') || 
+                     req.headers.get('x-real-ip') || 
+                     'Unknown';
+
+    // Log to Discord
+    await logPlanPurchaseToDiscord({
+      userId,
+      planId,
+      planName: plan.name,
+      amount: amountInIDR,
+      customerName: name,
+      customerEmail: email,
+      merchantRef: trx.merchant_ref,
+      status: "PENDING",
+      ip: clientIP,
     });
 
     await adminDb.collection("transactions").doc(trx.merchant_ref).set({

@@ -54,6 +54,7 @@ export class Tripay {
         amount: amountInt,
         customer_name: params.customer_name,
         customer_email: params.customer_email,
+        expired_time: 1,
         order_items: [
           {
             name: `Plan Upgrade: ${params.planId}`,

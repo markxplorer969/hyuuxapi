@@ -67,3 +67,89 @@ export async function sendToDiscord({
     console.error("[Discord Logger Error]:", err?.response?.data || err);
   }
 }
+
+export async function logPlanPurchaseToDiscord({
+  userId,
+  planId,
+  planName,
+  amount,
+  customerName,
+  customerEmail,
+  merchantRef,
+  status,
+  ip,
+}: {
+  userId: string;
+  planId: string;
+  planName: string;
+  amount: number;
+  customerName: string;
+  customerEmail: string;
+  merchantRef: string;
+  status: "PENDING" | "SUCCESS" | "FAILED";
+  ip: string;
+}) {
+  try {
+    if (!WEBHOOK_URL) {
+      console.log("[Discord Logger] Missing DISCORD_WEBHOOK_URL");
+      return;
+    }
+
+    const embed = {
+      title: status === "PENDING" ? "🛒 Plan Purchase Initiated" : 
+             status === "SUCCESS" ? "✅ Plan Purchase Successful" : "❌ Plan Purchase Failed",
+      color: status === "PENDING" ? 0xffaa00 : 
+             status === "SUCCESS" ? 0x00ff00 : 0xff0000,
+      fields: [
+        {
+          name: "👤 User",
+          value: `\`${customerName}\` (${customerEmail})`,
+          inline: true,
+        },
+        {
+          name: "🆔 User ID",
+          value: `\`${userId}\``,
+          inline: true,
+        },
+        {
+          name: "📦 Plan",
+          value: `\`${planName}\` (${planId})`,
+          inline: true,
+        },
+        {
+          name: "💰 Amount",
+          value: `\`Rp ${amount.toLocaleString('id-ID')}\``,
+          inline: true,
+        },
+        {
+          name: "🧾 Merchant Ref",
+          value: `\`${merchantRef}\``,
+        },
+        {
+          name: "🌐 IP Address",
+          value: `\`${ip}\``,
+          inline: true,
+        },
+        {
+          name: "📅 Timestamp",
+          value: `\`${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}\``,
+          inline: true,
+        },
+      ],
+      timestamp: new Date().toISOString(),
+      footer: {
+        text: "Slowly API Payment System",
+        icon_url: "https://cdn.discordapp.com/embed/avatars/0.png",
+      },
+    };
+
+    await axios.post(WEBHOOK_URL, {
+      username: "Slowly API Payments",
+      avatar_url:
+        "https://cdn.discordapp.com/embed/avatars/0.png",
+      embeds: [embed],
+    });
+  } catch (err: any) {
+    console.error("[Discord Payment Logger Error]:", err?.response?.data || err);
+  }
+}

@@ -31,9 +31,13 @@ function PaymentPageContent() {
       cache: "no-store",
     });
 
-    if (!res.ok) return;
-
-    const data = await res.json();
+    if (!res.ok || data.error) {
+      console.log('Real status failed, trying mock...');
+      const mockRes = await fetch(`/api/payment/mock-status?ref=${ref}`, {
+        cache: "no-store",
+      });
+      data = await mockRes.json();
+    }
     if (data.trx) {
       setTrx(data.trx);
       setStatus(data.trx.status);

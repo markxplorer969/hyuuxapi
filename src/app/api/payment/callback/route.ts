@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { adminDb } from "@/lib/firebase-admin";
+import { logPlanPurchaseToDiscord } from "@/lib/discord";
+import { getPlanById } from "@/lib/plans";
 
 export async function POST(req: Request) {
   try {
@@ -32,6 +34,14 @@ export async function POST(req: Request) {
     const trx = trxDoc.data();
 
     if (status === "PAID") {
+      // Get client IP for logging
+      const clientIP = req.headers.get('x-forwarded-for') || 
+                       req.headers.get('x-real-ip') || 
+                       'Unknown';
+
+      // Get plan details for logging
+      const plan = getPlanById(trx.planId);
+
       // Update user plan
       await adminDb.collection("users").doc(trx.userId).update({
         plan: trx.planId,
@@ -43,6 +53,21 @@ export async function POST(req: Request) {
         status: "PAID",
         paidAt: new Date(),
       });
+
+      // Log successful payment to Discord
+      if (plan) {
+        await logPlanPurchaseToDiscord({
+          userId: trx.userId,
+          planId: trx.planId,
+          planName: plan.name,
+          amount: trx.amount,
+          customerName: trx.customerName || 'User',
+          customerEmail: trx.customerEmail || 'user@example.com',
+          merchantRef: merchant_ref,
+          status: "SUCCESS",
+          ip: clientIP,
+        });
+      }
     }
 
     return NextResponse.json({ success: true });
