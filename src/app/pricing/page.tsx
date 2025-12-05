@@ -53,20 +53,30 @@ export default function PricingPage() {
         body: JSON.stringify({
           userId: user.uid,
           planId,
+          name: user.displayName || 'User',
+          email: user.email || 'user@example.com',
         }),
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        console.error(data);
-        alert(data.error || 'Failed to create payment');
+        console.error('Payment creation error:', data);
+        
+        // Handle specific error cases
+        if (data.error?.includes('Unauthorized IP') || data.error?.includes('Whitelist IP')) {
+          alert('Payment Error: Server IP is not whitelisted. Please contact the administrator to add IP 8.217.199.231 to Tripay merchant whitelist.');
+        } else if (data.error?.includes('Sandbox') || data.error?.includes('credential')) {
+          alert('Payment Configuration Error: Please check Tripay credentials and environment settings.');
+        } else {
+          alert(data.error || 'Failed to create payment');
+        }
         return;
       }
 
-      router.push(`/payment?ref=${data.merchantRef}`);
+      router.push(`/payment?ref=${data.merchant_ref}`);
     } catch (e) {
-      console.error(e);
-      alert('Failed to create payment');
+      console.error('Payment creation exception:', e);
+      alert('Failed to create payment. Please try again later.');
     } finally {
       setLoadingPlan(null);
     }

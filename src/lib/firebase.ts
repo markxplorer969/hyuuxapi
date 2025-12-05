@@ -13,7 +13,6 @@ import {
 } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs, updateDoc, increment, orderBy } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getAnalytics, isSupported } from "firebase/analytics";
 
 // Firebase config
 const firebaseConfig = {
@@ -34,16 +33,6 @@ const storage = getStorage(app);
 // Google provider
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
-
-// Analytics loader for client-side only
-export async function loadAnalytics() {
-  if (typeof window === "undefined") return null;
-
-  const supported = await isSupported();
-  if (!supported) return null;
-
-  return getAnalytics(app);
-}
 
 // Auth functions
 export const signInWithGoogle = async () => {
