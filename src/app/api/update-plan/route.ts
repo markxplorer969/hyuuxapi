@@ -1,35 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase-admin/auth';
-import { initializeApp, cert } from 'firebase-admin/app';
-import admin from 'firebase-admin';
-
-// Initialize Firebase Admin SDK
-if (!admin.apps.length) {
-  try {
-    // Try to initialize with environment variables
-    const serviceAccount = {
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    };
-
-    if (serviceAccount.projectId && serviceAccount.clientEmail && serviceAccount.privateKey) {
-      initializeApp({
-        credential: cert(serviceAccount),
-        projectId: serviceAccount.projectId,
-      });
-    } else {
-      throw new Error('Missing Firebase Admin SDK configuration');
-    }
-  } catch (error) {
-    console.error('Firebase Admin SDK initialization error:', error);
-    throw error;
-  }
-}
-
-const db = getFirestore();
-const auth = getAuth();
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,19 +21,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the user document
-    const userRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userRef);
+    // Get user document
+    const userRef = adminDb.collection('users').doc(userId);
+    const userDoc = await userRef.get();
 
-    if (!userDoc.exists()) {
+    if (!userDoc.exists) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
-    // Update the user's plan
-    await updateDoc(userRef, {
+    // Update user's plan
+    await userRef.update({
       plan: newPlan,
       updatedAt: new Date().toISOString()
     });

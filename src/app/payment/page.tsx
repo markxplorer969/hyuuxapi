@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, CheckCircle, XCircle, ArrowLeft, Clock } from "lucide-react";
 import Image from "next/image";
@@ -14,7 +14,7 @@ interface TransactionData {
   status: string;
 }
 
-export default function PaymentPage() {
+function PaymentPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -175,5 +175,18 @@ export default function PaymentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col items-center justify-center text-center">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+        <p className="text-gray-600 dark:text-gray-300">Loading payment...</p>
+      </div>
+    }>
+      <PaymentPageContent />
+    </Suspense>
   );
 }
