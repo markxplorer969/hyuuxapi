@@ -21,17 +21,8 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { PLANS } from '@/lib/plans';
+import { PLANS, formatPrice } from '@/lib/plans';
 import { useAuth } from '@/contexts/AuthContext';
-
-const USD_TO_IDR = 15000;
-
-const formatRupiahFromUsd = (usd: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(usd * USD_TO_IDR);
 
 export default function PricingPage() {
   const router = useRouter();
@@ -64,7 +55,7 @@ export default function PricingPage() {
         
         // Handle specific error cases
         if (data.error?.includes('Unauthorized IP') || data.error?.includes('Whitelist IP')) {
-          alert('Payment Error: Server IP is not whitelisted. Please contact the administrator to add IP web to Tripay merchant whitelist.');
+          alert('Payment Error: Server IP is not whitelisted. Please contact the administrator to add IP 8.217.199.231 to Tripay merchant whitelist.');
         } else if (data.error?.includes('Sandbox') || data.error?.includes('credential')) {
           alert('Payment Configuration Error: Please check Tripay credentials and environment settings.');
         } else {
@@ -83,7 +74,7 @@ export default function PricingPage() {
   };
 
   const handleContactDev = () => {
-    window.open('https://wa.me/6285883795285', '_blank');
+    window.open('https://wa.me/6285123456', '_blank');
   };
 
   return (
@@ -137,7 +128,7 @@ export default function PricingPage() {
                     <span className={cn('text-2xl font-bold', plan.color)}>
                       {isFree
                         ? 'Free'
-                        : formatRupiahFromUsd(plan.price) + '/bulan'}
+                        : formatPrice(plan.price) + '/bulan'}
                     </span>
                   </div>
 

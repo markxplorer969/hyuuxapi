@@ -17,8 +17,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    // Convert USD to IDR (assuming 1 USD = 15,000 IDR)
-    const amountInIDR = plan.price * 15000;
+    // Price is already in IDR, no conversion needed
+    const amountInIDR = plan.price;
 
     const tripay = new Tripay();
 
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       userId,
       planId,
       amount: amountInIDR,
-      amountUSD: plan.price,
+      amountIDR: plan.price,
       status: "PENDING",
       createdAt: new Date(),
       qr_url: trx.data?.qr_url || '',
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       qr_image: trx.data?.qr_image_url || '',
       merchant_ref: trx.merchant_ref,
       amount: amountInIDR,
-      amountUSD: plan.price,
+      amountIDR: plan.price,
     });
   } catch (err: any) {
     console.error("Payment error", err);

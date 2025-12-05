@@ -1,3 +1,5 @@
+import config from './config.json';
+
 export interface PlanConfig {
   id: string;
   name: string;
@@ -17,7 +19,7 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'FREE',
     name: 'Free',
-    price: 0,
+    price: config.plans.FREE,
     duration: 30,
     features: [
       '20 API calls per day',
@@ -35,7 +37,7 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'CHEAP',
     name: 'Cheap',
-    price: 500,
+    price: config.plans.CHEAP,
     duration: 30,
     features: [
       '1,000 API calls per day',
@@ -55,7 +57,7 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'PREMIUM',
     name: 'Premium',
-    price: 1000,
+    price: config.plans.PREMIUM,
     duration: 30,
     features: [
       '2,500 API calls per day',
@@ -75,7 +77,7 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'VIP',
     name: 'VIP',
-    price: 2500,
+    price: config.plans.VIP,
     duration: 30,
     features: [
       '5,000 API calls per day',
@@ -96,7 +98,7 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'VVIP',
     name: 'VVIP',
-    price: 5000,
+    price: config.plans.VVIP,
     duration: 30,
     features: [
       '10,000 API calls per day',
@@ -118,7 +120,7 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'SUPREME',
     name: 'Supreme',
-    price: 10000,
+    price: config.plans.SUPREME,
     duration: 30,
     features: [
       '20,000 API calls per day',
@@ -170,8 +172,10 @@ export const formatBytes = (bytes: number): string => {
 };
 
 export const formatPrice = (price: number): string => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat(config.currency.locale, {
     style: 'currency',
-    currency: 'USD'
+    currency: config.currency.code,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(price);
 };
