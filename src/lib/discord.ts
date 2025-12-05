@@ -78,6 +78,8 @@ export async function logPlanPurchaseToDiscord({
   merchantRef,
   status,
   ip,
+  method = 'QRIS',
+  expiredTime,
 }: {
   userId: string;
   planId: string;
@@ -88,12 +90,25 @@ export async function logPlanPurchaseToDiscord({
   merchantRef: string;
   status: "PENDING" | "SUCCESS" | "FAILED";
   ip: string;
+  method?: string;
+  expiredTime?: number;
 }) {
   try {
     if (!WEBHOOK_URL) {
       console.log("[Discord Logger] Missing DISCORD_WEBHOOK_URL");
       return;
     }
+
+    const getMethodIcon = (method: string) => {
+      switch (method) {
+        case 'QRIS': return '📱';
+        case 'DANA': return '💰';
+        case 'OVO': return '🟣';
+        case 'SHOPEEPAY': return '🟠';
+        case 'GOPAY': return '🟢';
+        default: return '💳';
+      }
+    };
 
     const embed = {
       title: status === "PENDING" ? "🛒 Plan Purchase Initiated" : 
@@ -122,9 +137,19 @@ export async function logPlanPurchaseToDiscord({
           inline: true,
         },
         {
+          name: `${getMethodIcon(method)} Payment Method`,
+          value: `\`${method}\``,
+          inline: true,
+        },
+        {
           name: "🧾 Merchant Ref",
           value: `\`${merchantRef}\``,
         },
+        ...(expiredTime ? [{
+          name: "⏰ Valid For",
+          value: `\`${expiredTime} minutes\``,
+          inline: true,
+        }] : []),
         {
           name: "🌐 IP Address",
           value: `\`${ip}\``,

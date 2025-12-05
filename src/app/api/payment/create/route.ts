@@ -7,7 +7,7 @@ import { logPlanPurchaseToDiscord } from "@/lib/discord";
 
 export async function POST(req: Request) {
   try {
-    const { userId, planId, name, email } = await req.json();
+    const { userId, planId, name, email, method = 'QRIS' } = await req.json();
 
     if (!userId || !planId) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -23,12 +23,13 @@ export async function POST(req: Request) {
 
     const tripay = new Tripay();
 
-    const trx = await tripay.createQris({
+    const trx = await tripay.createPayment({
       userId,
       planId,
       amount: amountInIDR,
       customer_name: name,
       customer_email: email,
+      method,
     });
 
     // Get client IP for logging
@@ -47,6 +48,8 @@ export async function POST(req: Request) {
       merchantRef: trx.merchant_ref,
       status: "PENDING",
       ip: clientIP,
+      method,
+      expiredTime: 60,
     });
 
     await adminDb.collection("transactions").doc(trx.merchant_ref).set({
@@ -56,9 +59,11 @@ export async function POST(req: Request) {
       amount: amountInIDR,
       amountIDR: plan.price,
       status: "PENDING",
+      method,
       createdAt: new Date(),
       qr_url: trx.data?.qr_url || '',
       qr_image: trx.data?.qr_image_url || '',
+      payment_url: trx.data?.checkout_url || '',
       response: trx,
     });
 
@@ -66,15 +71,43 @@ export async function POST(req: Request) {
       success: true,
       qr_url: trx.data?.qr_url || '',
       qr_image: trx.data?.qr_image_url || '',
+      payment_url: trx.data?.checkout_url || '',
       merchant_ref: trx.merchant_ref,
       amount: amountInIDR,
       amountIDR: plan.price,
+      method,
     });
   } catch (err: any) {
-    console.error("Payment error", err);
+    console.error("Payment error", {
+      error: err,
+      message: err?.message,
+      stack: err?.stack,
+      response: err?.response?.data
+    });
+    
+    // Determine appropriate error message
+    let errorMessage = "Internal server error";
+    let statusCode = 500;
+    
+    if (err?.message) {
+      if (err.message.includes('Unauthorized IP')) {
+        errorMessage = err.message;
+        statusCode = 403;
+      } else if (err.message.includes('ECONNREFUSED')) {
+        errorMessage = "Payment provider connection failed. Please try again later.";
+        statusCode = 503;
+      } else if (err.message.includes('timeout')) {
+        errorMessage = "Payment request timed out. Please try again.";
+        statusCode = 504;
+      } else {
+        errorMessage = err.message;
+      }
+    }
+    
     return NextResponse.json({ 
-      error: err.message || "Internal server error",
-      details: err.response?.data || null 
-    }, { status: 500 });
+      error: errorMessage,
+      details: err.response?.data || null,
+      timestamp: new Date().toISOString()
+    }, { status: statusCode });
   }
 }

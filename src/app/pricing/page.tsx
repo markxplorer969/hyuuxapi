@@ -8,6 +8,7 @@ import {
   Key,
   MessageCircle,
   Zap,
+  Wallet,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -20,14 +21,26 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { PLANS, formatPrice } from '@/lib/plans';
 import { useAuth } from '@/contexts/AuthContext';
+import PaymentMethodSelector from '@/components/PaymentMethodSelector';
 
 export default function PricingPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<string>('QRIS');
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   const handleBuyPlan = async (planId: string) => {
     if (!user) {
@@ -35,56 +48,124 @@ export default function PricingPage() {
       return;
     }
 
+    setSelectedPlan(planId);
+    setPaymentDialogOpen(true);
+  };
+
+  const confirmPayment = async () => {
+    if (!user || !selectedPlan) return;
+
     try {
-      setLoadingPlan(planId);
+      setLoadingPlan(selectedPlan);
+      setPaymentDialogOpen(false);
 
       const res = await fetch('/api/payment/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user.uid,
-          planId,
+          planId: selectedPlan,
           name: user.displayName || 'User',
           email: user.email || 'user@example.com',
+          method: selectedMethod,
         }),
       });
 
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        data = { error: 'Invalid response from server' };
+      }
+
+      console.log('Payment creation response:', {
+        status: res.status,
+        ok: res.ok,
+        data
+      });
+
       // If real payment fails due to IP, try mock
-      let data = await res.json();
       if (!res.ok && data.error?.includes('Unauthorized IP')) {
         console.log('Real payment failed due to IP, trying mock...');
-        const mockRes = await fetch('/api/payment/mock-create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: user.uid,
-            planId,
-            name: user.displayName || 'User',
-            email: user.email || 'user@example.com',
-          }),
-        });
-        data = await mockRes.json();
+        try {
+          const mockRes = await fetch('/api/payment/mock-create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.uid,
+              planId: selectedPlan,
+              name: user.displayName || 'User',
+              email: user.email || 'user@example.com',
+              method: selectedMethod,
+            }),
+          });
+          
+          const mockData = await mockRes.json();
+          console.log('Mock payment response:', mockData);
+          
+          if (mockData.success) {
+            data = mockData;
+          } else {
+            console.error('Mock payment also failed:', mockData);
+          }
+        } catch (mockError) {
+          console.error('Mock payment error:', mockError);
+          data = { error: 'Both real and mock payments failed' };
+        }
       }
-      if (!res.ok || !data.success) {
-        console.error('Payment creation error:', data);
+      
+      if (!res.ok && (!data || !data.success)) {
+        console.error('Payment creation failed:', {
+          status: res.status,
+          data,
+          selectedPlan,
+          selectedMethod
+        });
+        
+        const errorMessage = data?.error || 'Failed to create payment';
         
         // Handle specific error cases
-        if (data.error?.includes('Unauthorized IP') || data.error?.includes('Whitelist IP')) {
+        if (errorMessage.includes('Unauthorized IP') || errorMessage.includes('Whitelist IP')) {
           alert('Payment Error: Server IP is not whitelisted. Please contact the administrator to add IP 8.217.199.231 to Tripay merchant whitelist.');
-        } else if (data.error?.includes('Sandbox') || data.error?.includes('credential')) {
+        } else if (errorMessage.includes('Sandbox') || errorMessage.includes('credential')) {
           alert('Payment Configuration Error: Please check Tripay credentials and environment settings.');
+        } else if (errorMessage.includes('Missing fields')) {
+          alert('Payment Error: Required information is missing. Please try again.');
+        } else if (errorMessage.includes('Invalid plan')) {
+          alert('Payment Error: Invalid plan selected. Please try again.');
         } else {
-          alert(data.error || 'Failed to create payment');
+          alert(`${errorMessage}. Please try again or contact support.`);
         }
         return;
       }
 
       router.push(`/payment?ref=${data.merchant_ref}`);
-    } catch (e) {
-      console.error('Payment creation exception:', e);
-      alert('Failed to create payment. Please try again later.');
+    } catch (e: any) {
+      console.error('Payment creation exception:', {
+        error: e,
+        message: e?.message,
+        stack: e?.stack,
+        selectedPlan,
+        selectedMethod
+      });
+      
+      let errorMessage = 'Failed to create payment. Please try again later.';
+      
+      if (e?.message) {
+        if (e.message.includes('Failed to fetch')) {
+          errorMessage = 'Network error. Please check your internet connection and try again.';
+        } else if (e.message.includes('AbortError')) {
+          errorMessage = 'Request timed out. Please try again.';
+        } else {
+          errorMessage = e.message;
+        }
+      }
+      
+      alert(errorMessage);
     } finally {
       setLoadingPlan(null);
+      setSelectedPlan(null);
     }
   };
 
@@ -105,8 +186,7 @@ export default function PricingPage() {
             Choose your <span className="text-blue-600 dark:text-blue-400">API plan</span>
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            Upgrade kapan saja. Semua pembayaran menggunakan QRIS agar lebih simple
-            dan cepat.
+            Upgrade kapan saja. Pilih metode pembayaran yang nyaman untuk Anda.
           </p>
         </div>
 
@@ -173,20 +253,59 @@ export default function PricingPage() {
                 </CardContent>
 
                 <CardFooter className="mt-2 flex flex-col gap-2 pt-2">
-                  <Button
-                    size="sm"
-                    className="w-full justify-center"
-                    disabled={loadingPlan === plan.id || isFree}
-                    onClick={() => handleBuyPlan(plan.id)}
-                  >
-                    {isFree ? (
-                      'Current Plan'
-                    ) : loadingPlan === plan.id ? (
-                      'Processing...'
-                    ) : (
-                      'Buy Plan (QRIS)'
-                    )}
-                  </Button>
+                  <Dialog open={paymentDialogOpen && selectedPlan === plan.id} onOpenChange={setPaymentDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="w-full justify-center"
+                        disabled={loadingPlan === plan.id || isFree}
+                        onClick={() => handleBuyPlan(plan.id)}
+                      >
+                        {isFree ? (
+                          'Current Plan'
+                        ) : loadingPlan === plan.id ? (
+                          'Processing...'
+                        ) : (
+                          <>
+                            <Wallet className="mr-2 h-4 w-4" />
+                            Buy Plan
+                          </>
+                        )}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px]">
+                      <DialogHeader>
+                        <DialogTitle>Pilih Metode Pembayaran</DialogTitle>
+                        <DialogDescription>
+                          Pilih metode pembayaran yang Anda inginkan untuk {plan.name}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <PaymentMethodSelector
+                          selectedMethod={selectedMethod}
+                          onMethodChange={setSelectedMethod}
+                          disabled={loadingPlan !== null}
+                        />
+                        <div className="flex gap-3 pt-4">
+                          <Button
+                            variant="outline"
+                            onClick={() => setPaymentDialogOpen(false)}
+                            disabled={loadingPlan !== null}
+                            className="flex-1"
+                          >
+                            Batal
+                          </Button>
+                          <Button
+                            onClick={confirmPayment}
+                            disabled={loadingPlan !== null}
+                            className="flex-1"
+                          >
+                            {loadingPlan ? 'Processing...' : `Bayar ${formatPrice(plan.price)}`}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
 
                   <Button
                     size="sm"

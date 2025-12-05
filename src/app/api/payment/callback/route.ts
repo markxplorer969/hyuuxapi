@@ -66,6 +66,7 @@ export async function POST(req: Request) {
           merchantRef: merchant_ref,
           status: "SUCCESS",
           ip: clientIP,
+          method: trx.method || 'QRIS',
         });
       }
     }

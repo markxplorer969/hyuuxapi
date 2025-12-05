@@ -29,12 +29,13 @@ export class Tripay {
     return crypto.createHmac("sha256", this.privateKey).update(raw).digest("hex");
   }
 
-  async createQris(params: {
+  async createPayment(params: {
     userId: string;
     planId: string;
     amount: number;
     customer_name: string;
     customer_email: string;
+    method: string;
   }) {
     try {
       const amountInt = Math.round(params.amount);
@@ -45,16 +46,17 @@ export class Tripay {
         amount: amountInt,
         customer_name: params.customer_name,
         customer_email: params.customer_email,
-        planId: params.planId
+        planId: params.planId,
+        method: params.method
       });
 
       const payload = {
-        method: "QRIS",
+        method: params.method,
         merchant_ref,
         amount: amountInt,
         customer_name: params.customer_name,
         customer_email: params.customer_email,
-        expired_time: 1,
+        expired_time: 60,
         order_items: [
           {
             name: `Plan Upgrade: ${params.planId}`,
@@ -89,6 +91,19 @@ export class Tripay {
       
       throw new Error(err.response?.data?.message || err.message || 'Failed to create payment');
     }
+  }
+
+  async createQris(params: {
+    userId: string;
+    planId: string;
+    amount: number;
+    customer_name: string;
+    customer_email: string;
+  }) {
+    return this.createPayment({
+      ...params,
+      method: "QRIS"
+    });
   }
 
   async checkTransactionStatus(reference: string) {
@@ -134,6 +149,46 @@ export class Tripay {
       console.error("Tripay Channels Error", err.response?.data || err.message);
       throw new Error(JSON.stringify(err.response?.data || err.message));
     }
+  }
+
+  getAvailablePaymentMethods() {
+    return [
+      {
+        code: 'QRIS',
+        name: 'QRIS',
+        icon: '📱',
+        description: 'Scan QR code dengan aplikasi e-wallet apa saja',
+        category: 'qris'
+      },
+      {
+        code: 'DANA',
+        name: 'DANA',
+        icon: '💰',
+        description: 'Bayar menggunakan aplikasi DANA',
+        category: 'ewallet'
+      },
+      {
+        code: 'OVO',
+        name: 'OVO',
+        icon: '🟣',
+        description: 'Bayar menggunakan aplikasi OVO',
+        category: 'ewallet'
+      },
+      {
+        code: 'SHOPEEPAY',
+        name: 'ShopeePay',
+        icon: '🟠',
+        description: 'Bayar menggunakan ShopeePay',
+        category: 'ewallet'
+      },
+      {
+        code: 'GOPAY',
+        name: 'GoPay',
+        icon: '🟢',
+        description: 'Bayar menggunakan GoPay',
+        category: 'ewallet'
+      }
+    ];
   }
 
   async getPaymentChannelsAlternative() {
