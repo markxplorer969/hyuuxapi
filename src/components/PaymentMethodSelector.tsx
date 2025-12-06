@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Tripay } from '@/lib/tripay';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,9 +24,16 @@ export default function PaymentMethodSelector({
   onMethodChange,
   disabled = false
 }: PaymentMethodSelectorProps) {
-  const [paymentMethods] = useState<PaymentMethod[]>(
-    new Tripay().getAvailablePaymentMethods()
-  );
+  // Only QRIS payment method available
+  const [paymentMethods] = useState<PaymentMethod[]>([
+    {
+      code: 'QRIS',
+      name: 'QRIS',
+      icon: '📱',
+      description: 'Scan QR code dengan aplikasi e-wallet',
+      category: 'qris'
+    }
+  ]);
 
   const groupedMethods = paymentMethods.reduce((acc, method) => {
     if (!acc[method.category]) {
@@ -38,14 +44,16 @@ export default function PaymentMethodSelector({
   }, {} as Record<string, PaymentMethod[]>);
 
   const categoryTitles = {
-    qris: 'QR Code',
-    ewallet: 'E-Wallet'
+    qris: 'QR Code'
   };
 
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold mb-3">Pilih Metode Pembayaran</h3>
+        <h3 className="text-lg font-semibold mb-3">Metode Pembayaran</h3>
+        <p className="text-sm text-muted-foreground">
+          Scan QR code untuk menyelesaikan pembayaran
+        </p>
       </div>
       
       {Object.entries(groupedMethods).map(([category, methods]) => (

@@ -15,9 +15,9 @@ export async function POST(request: NextRequest) {
   try {
     const { userId, apiKeyId, usage = 1 } = await request.json();
 
-    if (!userId) {
+    if (!userId || !apiKeyId) {
       return NextResponse.json(
-        { error: 'User ID is required' },
+        { error: 'User ID and API Key ID are required' },
         { status: 400 }
       );
     }
@@ -25,60 +25,56 @@ export async function POST(request: NextRequest) {
     // Get current date string for daily tracking
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
-    // Get user document
-    const userDoc = await adminDb.collection(adminCollections.users).doc(userId).get();
+    // Get API key document
+    const apiKeyDoc = await adminDb.collection(adminCollections.apiKeys).doc(apiKeyId).get();
     
-    if (!userDoc.exists) {
+    if (!apiKeyDoc.exists) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'API key not found' },
         { status: 404 }
       );
     }
 
-    const userData = userDoc.data();
-    const lastUsageDate = userData?.lastUsageDate;
+    // Verify the API key belongs to the user
+    const apiKeyData = apiKeyDoc.data();
+    if (apiKeyData.userId !== userId) {
+      return NextResponse.json(
+        { error: 'API key does not belong to this user' },
+        { status: 403 }
+      );
+    }
+
+    const lastUsageDate = apiKeyData?.lastUsageDate;
 
     // Check if it's a new day, reset usage if needed
     let wasReset = false;
-    let userUpdateData: any = {
-      lastUsageDate: today
+    let apiKeyUpdateData: any = {
+      lastUsageDate: today,
+      lastUsed: Timestamp.now()
     };
 
     if (!lastUsageDate || lastUsageDate !== today) {
       // New day, reset usage
-      userUpdateData.apiKeyUsage = usage;
-      userUpdateData.lastUsageReset = Timestamp.now();
+      apiKeyUpdateData.usage = usage;
       wasReset = true;
     } else {
       // Same day, increment usage
-      userUpdateData.apiKeyUsage = FieldValue.increment(usage);
+      apiKeyUpdateData.usage = FieldValue.increment(usage);
     }
 
-    // Update user document
-    await adminDb.collection(adminCollections.users).doc(userId).update(userUpdateData);
+    // Update API key document
+    await adminDb.collection(adminCollections.apiKeys).doc(apiKeyId).update(apiKeyUpdateData);
 
-    // Update API key usage if apiKeyId is provided
-    if (apiKeyId) {
-      const apiKeyUpdateData: any = {
-        lastUsed: Timestamp.now()
-      };
+    // Get user document for role and limit information
+    const userDoc = await adminDb.collection(adminCollections.users).doc(userId).get();
+    const userData = userDoc.data();
+    const userRole = userData?.role || 'FREE';
+    const currentLimit = userData?.apiKeyLimit || ROLE_LIMITS[userRole] || ROLE_LIMITS.FREE;
 
-      if (wasReset) {
-        apiKeyUpdateData.usage = usage;
-      } else {
-        apiKeyUpdateData.usage = FieldValue.increment(usage);
-      }
-
-      await adminDb.collection(adminCollections.apiKeys).doc(apiKeyId).update(apiKeyUpdateData);
-    }
-
-    // Get updated user data
-    const updatedUserDoc = await adminDb.collection(adminCollections.users).doc(userId).get();
-    const updatedUserData = updatedUserDoc.data();
-
-    const currentUsage = updatedUserData?.apiKeyUsage || 0;
-    const userRole = updatedUserData?.role || 'FREE';
-    const currentLimit = updatedUserData?.apiKeyLimit || ROLE_LIMITS[userRole] || ROLE_LIMITS.FREE;
+    // Get updated API key data
+    const updatedApiKeyDoc = await adminDb.collection(adminCollections.apiKeys).doc(apiKeyId).get();
+    const updatedApiKeyData = updatedApiKeyDoc.data();
+    const currentUsage = updatedApiKeyData?.usage || 0;
 
     return NextResponse.json({
       success: true,
@@ -114,27 +110,34 @@ export async function GET(request: NextRequest) {
 
     const today = new Date().toISOString().split('T')[0];
 
-    // Get user document
-    const userDoc = await adminDb.collection(adminCollections.users).doc(userId).get();
-    
-    if (!userDoc.exists) {
+    // Get user's API keys
+    const apiKeysQuery = await adminDb.collection(adminCollections.apiKeys)
+      .where('userId', '==', userId)
+      .where('isActive', '==', true)
+      .get();
+
+    if (apiKeysQuery.empty) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'No active API keys found for this user' },
         { status: 404 }
       );
     }
 
-    const userData = userDoc.data();
-    const lastUsageDate = userData?.lastUsageDate;
+    // Get the first active API key (or you could sum usage across all keys)
+    const apiKeyDoc = apiKeysQuery.docs[0];
+    const apiKeyData = apiKeyDoc.data();
+    const apiKeyId = apiKeyDoc.id;
+
+    const lastUsageDate = apiKeyData?.lastUsageDate;
 
     // Check if usage needs to be reset (new day)
-    let currentUsage = userData?.apiKeyUsage || 0;
+    let currentUsage = apiKeyData?.usage || 0;
     let wasReset = false;
 
     if (!lastUsageDate || lastUsageDate !== today) {
       // New day, reset usage to 0
-      await adminDb.collection(adminCollections.users).doc(userId).update({
-        apiKeyUsage: 0,
+      await adminDb.collection(adminCollections.apiKeys).doc(apiId).update({
+        usage: 0,
         lastUsageDate: today,
         lastUsageReset: Timestamp.now()
       });
@@ -142,6 +145,9 @@ export async function GET(request: NextRequest) {
       wasReset = true;
     }
 
+    // Get user document for role and limit information
+    const userDoc = await adminDb.collection(adminCollections.users).doc(userId).get();
+    const userData = userDoc.data();
     const userRole = userData?.role || 'FREE';
     const currentLimit = userData?.apiKeyLimit || ROLE_LIMITS[userRole] || ROLE_LIMITS.FREE;
 
@@ -153,7 +159,8 @@ export async function GET(request: NextRequest) {
         remaining: Math.max(0, currentLimit - currentUsage),
         date: today,
         lastUsageDate: lastUsageDate,
-        wasReset: wasReset
+        wasReset: wasReset,
+        apiKeyId: apiKeyId
       }
     });
 
