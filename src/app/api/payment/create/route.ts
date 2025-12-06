@@ -7,7 +7,7 @@ import { logPlanPurchaseToDiscord } from "@/lib/discord";
 
 export async function POST(req: Request) {
   try {
-    const { userId, planId, name, email } = await req.json();
+    const { userId, planId, name, email, method = 'QRIS' } = await req.json();
 
     if (!userId || !planId) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -20,9 +20,6 @@ export async function POST(req: Request) {
 
     // Price is already in IDR, no conversion needed
     const amountInIDR = plan.price;
-    
-    // Force QRIS method - ignore any method from request
-    const method = 'QRIS';
 
     const tripay = new Tripay();
 
@@ -72,7 +69,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      redirect_url: trx.data?.checkout_url || '',
+      qr_url: trx.data?.qr_url || '',
+      qr_image: trx.data?.qr_image_url || '',
+      payment_url: trx.data?.checkout_url || '',
       merchant_ref: trx.merchant_ref,
       amount: amountInIDR,
       amountIDR: plan.price,

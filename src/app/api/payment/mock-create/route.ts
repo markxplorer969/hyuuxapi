@@ -37,14 +37,12 @@ export async function POST(req: Request) {
         ...mockData,
         qr_url: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fexample.com',
         qr_image: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fexample.com&format=png',
-        redirect_url: 'https://tripay.co.id/checkout/TEST-MOCK-PAYMENT',
       };
     } else {
       // For e-wallet methods, provide checkout URL
       mockData = {
         ...mockData,
         payment_url: `https://example.com/checkout/${mockMerchantRef}`,
-        redirect_url: 'https://tripay.co.id/checkout/TEST-MOCK-PAYMENT',
         instructions: `Silakan buka aplikasi ${method} dan selesaikan pembayaran`,
       };
     }

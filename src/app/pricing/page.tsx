@@ -140,13 +140,7 @@ export default function PricingPage() {
         return;
       }
 
-      if (data.success && data.redirect_url) {
-        // Redirect directly to Tripay payment page
-        window.location.href = data.redirect_url;
-      } else {
-        // Fallback to payment page if redirect_url is not available
-        router.push(`/payment?ref=${data.merchant_ref}`);
-      }
+      router.push(`/payment?ref=${data.merchant_ref}`);
     } catch (e: any) {
       console.error('Payment creation exception:', {
         error: e,
