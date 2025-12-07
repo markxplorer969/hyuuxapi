@@ -277,10 +277,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(data.error || 'Failed to get daily usage');
       }
 
-      // Update user state with current usage
+      // Update user state with current usage and apiKeyId from API response
       setUser(prev => prev ? {
         ...prev,
-        apiKeyUsage: data.data.usage || 0
+        apiKeyUsage: data.data.usage || 0,
+        apiKeyId: data.data.apiKeyId || prev.apiKeyId
       } : null);
 
       return data.data;
