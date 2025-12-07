@@ -88,9 +88,27 @@
       "desc": "Full website screenshot using Imagy",
       "method": "POST",
       "status": "Active",
-      "path": "/api/tools/ssweb?url=&apikey="
+      "path": "/api/tools/ssweb",
+      "body": {
+        "type": "JSON",
+        "parameters": [
+          {
+            "key": "apikey",
+            "type": "string",
+            "required": true,
+            "desc": "ApiKey untuk authentication"
+          },
+          {
+            "key": "url",
+            "type": "string",
+            "required": true,
+            "example": "https://hyuu.tech",
+            "desc": "URL website yang akan di-screenshot."
+          }
+        ]
+      }
     }
-  ],
+  ]
   "api": [
     {
       "name": "Status Api",

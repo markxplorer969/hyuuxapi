@@ -7,21 +7,41 @@ export async function GET() {
     const usersSnapshot = await adminDb.collection(adminCollections.users).get();
     const users = [];
 
-    usersSnapshot.forEach((doc) => {
-      const userData = doc.data();
+    for (const userDoc of usersSnapshot.docs) {
+      const userData = userDoc.data();
+      
+      // Get user's API keys to get current usage and limits
+      const apiKeysSnapshot = await adminDb
+        .collection(adminCollections.apiKeys)
+        .where('userId', '==', userDoc.id)
+        .where('isActive', '==', true)
+        .get();
+
+      let currentUsage = 0;
+      let currentLimit = 20; // Default FREE limit
+      let hasActiveKey = false;
+
+      if (!apiKeysSnapshot.empty) {
+        const apiKeyData = apiKeysSnapshot.docs[0].data();
+        currentUsage = apiKeyData.usage || 0;
+        currentLimit = apiKeyData.limit || 20;
+        hasActiveKey = true;
+      }
+
       users.push({
-        id: doc.id,
+        id: userDoc.id,
         displayName: userData.displayName || '',
         email: userData.email || '',
         role: userData.role || 'user',
         plan: userData.plan || 'FREE',
-        apiKeyUsage: userData.apiKeyUsage || 0,
-        apiKeyLimit: userData.apiKeyLimit || 20,
+        apiKeyUsage: currentUsage,
+        apiKeyLimit: currentLimit,
         createdAt: userData.createdAt,
         updatedAt: userData.updatedAt,
-        isActive: userData.isActive !== false // Default to true
+        isActive: userData.isActive !== false, // Default to true
+        hasActiveKey: hasActiveKey
       });
-    });
+    }
 
     // Sort by creation date (newest first)
     users.sort((a, b) => {
@@ -157,8 +177,8 @@ export async function PUT(request: NextRequest) {
     if (email !== undefined) updateData.email = email;
     if (role !== undefined) updateData.role = role;
     if (plan !== undefined) updateData.plan = plan;
-    if (apiKeyLimit !== undefined) updateData.apiKeyLimit = apiKeyLimit;
     if (isActive !== undefined) updateData.isActive = isActive;
+    // Note: apiKeyLimit is now managed through API keys collection
 
     // Update user in Firestore
     await adminDb.collection(adminCollections.users).doc(id).update(updateData);

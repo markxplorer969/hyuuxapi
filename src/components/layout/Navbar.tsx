@@ -36,7 +36,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const { user, logout, initializing } = useAuth();
+  const { user, logout, loading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -107,7 +107,7 @@ export default function Navbar() {
                   <span className="sr-only">Toggle theme</span>
                 </Button>
                 
-                {initializing ? (
+                {loading ? (
                   <div className="w-16 h-9 bg-muted animate-pulse rounded-lg" />
                 ) : user ? (
                   <DropdownMenu>
@@ -166,7 +166,7 @@ export default function Navbar() {
                   <span className="sr-only">Toggle theme</span>
                 </Button>
                 
-                {initializing ? (
+                {loading ? (
                   <div className="w-16 h-9 bg-muted animate-pulse rounded-lg" />
                 ) : user ? (
                   <DropdownMenu>
@@ -242,7 +242,7 @@ export default function Navbar() {
                           {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                         </Button>
                         
-                        {initializing ? (
+                        {loading ? (
                           <div className="w-full h-9 bg-muted animate-pulse rounded-lg" />
                         ) : user ? (
                           <>

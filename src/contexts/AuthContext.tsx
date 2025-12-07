@@ -122,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({
           ...userData,
           apiKeyUsage: userData.apiKeyUsage || 0,
-          apiKeyLimit: userData.apiKeyLimit || 20,
+          apiKeyLimit: 20, // Default limit from ROLE_LIMITS.FREE
           plan: userData.plan || 'FREE', // Default to FREE if not set
           role: userData.role || 'user' // Default to user if not set
         });

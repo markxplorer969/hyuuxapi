@@ -378,7 +378,7 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="text-2xl font-bold">{formatTime(currentTime)}</div>
                 <p className="text-xs text-muted-foreground">
-                  {currentTime.toLocaleDateString()}
+                  {currentTime instanceof Date ? currentTime.toLocaleDateString() : 'Unknown'}
                 </p>
               </CardContent>
             </Card>

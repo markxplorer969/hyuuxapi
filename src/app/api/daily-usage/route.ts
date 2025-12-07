@@ -65,11 +65,9 @@ export async function POST(request: NextRequest) {
     // Update API key document
     await adminDb.collection(adminCollections.apiKeys).doc(apiKeyId).update(apiKeyUpdateData);
 
-    // Get user document for role and limit information
-    const userDoc = await adminDb.collection(adminCollections.users).doc(userId).get();
-    const userData = userDoc.data();
-    const userRole = userData?.role || 'FREE';
-    const currentLimit = userData?.apiKeyLimit || ROLE_LIMITS[userRole] || ROLE_LIMITS.FREE;
+    // Get role and limit information from API key data
+    const userRole = apiKeyData?.role || 'FREE';
+    const currentLimit = apiKeyData?.limit || ROLE_LIMITS[userRole] || ROLE_LIMITS.FREE;
 
     // Get updated API key data
     const updatedApiKeyDoc = await adminDb.collection(adminCollections.apiKeys).doc(apiKeyId).get();
@@ -136,7 +134,7 @@ export async function GET(request: NextRequest) {
 
     if (!lastUsageDate || lastUsageDate !== today) {
       // New day, reset usage to 0
-      await adminDb.collection(adminCollections.apiKeys).doc(apiId).update({
+      await adminDb.collection(adminCollections.apiKeys).doc(apiKeyId).update({
         usage: 0,
         lastUsageDate: today,
         lastUsageReset: Timestamp.now()
@@ -145,11 +143,9 @@ export async function GET(request: NextRequest) {
       wasReset = true;
     }
 
-    // Get user document for role and limit information
-    const userDoc = await adminDb.collection(adminCollections.users).doc(userId).get();
-    const userData = userDoc.data();
-    const userRole = userData?.role || 'FREE';
-    const currentLimit = userData?.apiKeyLimit || ROLE_LIMITS[userRole] || ROLE_LIMITS.FREE;
+    // Get role and limit information from API key data
+    const userRole = apiKeyData?.role || 'FREE';
+    const currentLimit = apiKeyData?.limit || ROLE_LIMITS[userRole] || ROLE_LIMITS.FREE;
 
     return NextResponse.json({
       success: true,

@@ -21,7 +21,7 @@ export async function GET() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    usersSnapshot.forEach((doc) => {
+      for (const doc of usersSnapshot.docs) {
       const userData = doc.data();
       totalUsers++;
       
@@ -44,6 +44,22 @@ export async function GET() {
         }
       }
       
+      // Get user's API key data for usage and limits
+      const apiKeysSnapshot = await adminDb
+        .collection(adminCollections.apiKeys)
+        .where('userId', '==', doc.id)
+        .where('isActive', '==', true)
+        .get();
+
+      let currentUsage = 0;
+      let currentLimit = 20; // Default FREE limit
+      
+      if (!apiKeysSnapshot.empty) {
+        const apiKeyData = apiKeysSnapshot.docs[0].data();
+        currentUsage = apiKeyData.usage || 0;
+        currentLimit = apiKeyData.limit || 20;
+      }
+      
       // Add to recent users array (sorted by creation date)
       users.push({
         id: doc.id,
@@ -53,10 +69,10 @@ export async function GET() {
         plan: userData.plan || 'FREE',
         createdAt: userData.createdAt,
         createdDate: userData.createdAt ? userData.createdAt.toDate() : new Date(),
-        apiKeyUsage: userData.apiKeyUsage || 0,
-        apiKeyLimit: userData.apiKeyLimit || 20
+        apiKeyUsage: currentUsage,
+        apiKeyLimit: currentLimit
       });
-    });
+    }
 
     // Sort users by creation date (most recent first)
     users.sort((a, b) => {

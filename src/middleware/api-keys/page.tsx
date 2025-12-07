@@ -262,7 +262,7 @@ export default function ApiKeysPage() {
                       
                       <div className="text-sm text-muted-foreground">
                         <div>Usage: {key.usage} / {key.limit}</div>
-                        <div>Created: {key.createdAt.toLocaleDateString()}</div>
+                        <div>Created: {key.createdAt ? key.createdAt.toDate().toLocaleDateString() : 'Unknown'}</div>
                       </div>
                     </div>
                   ))}
