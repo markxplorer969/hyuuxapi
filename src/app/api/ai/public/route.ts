@@ -53,7 +53,27 @@ async function publicAiGenerate(question: string) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { question, apikey } = await req.json();
+    let question: string | undefined;
+    let apikey: string | undefined;
+
+    // Try to parse as JSON first
+    try {
+      const body = await req.json();
+      question = body.question;
+      apikey = body.apikey;
+    } catch (jsonError) {
+      // If JSON parsing fails, try to parse as URL-encoded form data
+      try {
+        const text = await req.text();
+        const params = new URLSearchParams(text);
+        question = params.get('question') || undefined;
+        apikey = params.get('apikey') || undefined;
+      } catch (formError) {
+        // If both fail, return empty
+        question = undefined;
+        apikey = undefined;
+      }
+    }
 
     if (!question) {
       return NextResponse.json(

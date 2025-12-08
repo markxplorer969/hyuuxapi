@@ -158,7 +158,7 @@ function TryApiPageInner() {
     setApiResponse(null);
 
     try {
-      const base = endpoint.path.split("?")[0];
+    const base = endpoint.path.split("?")[0].replace("/api/ai/publicai", "/api/ai/public");
       const url = `${base}${buildQueryString()}`;
 
       let options: RequestInit = {
@@ -205,7 +205,7 @@ function TryApiPageInner() {
   const codeExample = (): string => {
     if (!endpoint) return "";
 
-    const base = endpoint.path.split("?")[0];
+  const base = endpoint.path.split("?")[0].replace("/api/ai/publicai", "/api/ai/public");
     const qs = buildQueryString().replace(apiKey, "YOUR_API_KEY");
     const url = `${origin}${base}${qs}`;
     const body = endpoint.method === "POST" ? JSON.stringify(bodyParams, null, 2) : null;

@@ -12,7 +12,7 @@
       "desc": "PublicAI chat generation",
       "method": "POST",
       "status": "Active",
-      "path": "/api/ai/publicai?question=&apikey="
+      "path": "/api/ai/public?question=&apikey="
     },
     {
       "name": "Perplexed",
