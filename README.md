@@ -7,7 +7,7 @@ A modern, production-ready web application scaffold powered by cutting-edge tech
 This scaffold provides a robust foundation built with:
 
 ### 🎯 Core Framework
-- **⚡ Next.js 16** - The React framework for production with App Router
+- **⚡ Next.js 15** - The React framework for production with App Router
 - **📘 TypeScript 5** - Type-safe JavaScript for better developer experience
 - **🎨 Tailwind CSS 4** - Utility-first CSS framework for rapid UI development
 
