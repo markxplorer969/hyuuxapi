@@ -1,21 +1,66 @@
-# 🚀 Welcome to Z.ai Code Scaffold
+README.md
 
-A modern, production-ready web application scaffold powered by cutting-edge technologies, designed to accelerate your development with [Z.ai](https://chat.z.ai)'s AI-powered coding assistance.
+🚀 Slowly API - Production Ready Payment System
+A comprehensive, production-ready API payment system built with cutting-edge technologies, featuring Discord notifications, Firebase integration, and Tripay payment gateway. Developed with Next.js 16.0.7 and Turbopack for optimal performance.
 
-## ✨ Technology Stack
-
-This scaffold provides a robust foundation built with:
-
-### 🎯 Core Framework
-- **⚡ Next.js 15** - The React framework for production with App Router
-- **📘 TypeScript 5** - Type-safe JavaScript for better developer experience
-- **🎨 Tailwind CSS 4** - Utility-first CSS framework for rapid UI development
-
-### 🧩 UI Components & Styling
-- **🧩 shadcn/ui** - High-quality, accessible components built on Radix UI
-- **🎯 Lucide React** - Beautiful & consistent icon library
-- **🌈 Framer Motion** - Production-ready motion library for React
-- **🎨 Next Themes** - Perfect dark mode in 2 lines of code
+✨ Technology Stack
+🎯 Core Framework
+⚡ Next.js 16.0.7 - Latest React framework with App Router and Turbopack
+📘 TypeScript 5 - Type-safe JavaScript for better developer experience
+🎨 Tailwind CSS 4 - Utility-first CSS framework for rapid UI development
+🔐 Authentication & Database
+🔥 Firebase Admin SDK - Server-side authentication and Firestore database
+🔑 API Key Management - Secure API key generation and validation
+👥 User Management - Role-based access control (FREE → SUPREME)
+💳 Payment System
+💰 Tripay Payment Gateway - Indonesian payment gateway integration
+🔔 Discord Notifications - Real-time payment alerts and logging
+📊 Transaction Management - Complete payment tracking and audit trails
+🧩 UI Components & Styling
+🧩 shadcn/ui - High-quality, accessible components built on Radix UI
+🎯 Lucide React - Beautiful & consistent icon library
+🌈 Framer Motion - Production-ready motion library for React
+🎨 Next Themes - Perfect dark mode support
+📋 Forms & Validation
+🎣 React Hook Form - Performant forms with easy validation
+✅ Zod - TypeScript-first schema validation
+🔄 State Management & Data Fetching
+🐻 Zustand - Simple, scalable state management
+🔄 TanStack Query - Powerful data synchronization for React
+🌐 Axios - Promise-based HTTP client
+🗄️ Database & Backend
+🗄️ Prisma - Next-generation Node.js and TypeScript ORM
+🔥 Firebase Firestore - Real-time NoSQL database
+🔐 NextAuth.js - Complete open-source authentication solution
+🎯 Key Features
+💳 Payment Processing
+🔄 Real-time Callbacks - Instant payment status updates
+🔔 Discord Notifications - Live payment alerts with rich embeds
+🔐 HMAC Verification - Secure signature validation
+📊 Transaction Logging - Complete audit trails
+💰 Multi-channel Payments - QRIS, DANA, OVO, ShopeePay, GoPay
+👤 User Management
+🔑 API Key System - Secure API key generation and management
+📈 Tiered Plans - 6 subscription tiers (FREE → SUPREME)
+📊 Usage Tracking - Daily API usage monitoring
+🔒 Role-based Access - Admin, user, and enterprise roles
+🛡️ Security Features
+🔐 HMAC SHA256 - Payment signature verification
+🌐 IP Logging - Request tracking and monitoring
+🔑 API Key Validation - Secure endpoint access
+📝 Audit Trails - Complete transaction history
+📱 Admin Dashboard
+👥 User Management - Complete user administration
+🔑 API Key Control - CRUD operations for API keys
+📊 Analytics Dashboard - Usage statistics and metrics
+💳 Transaction Monitoring - Payment status and history
+🚀 Quick Start
+Prerequisites
+Node.js 18+
+npm or yarn
+Firebase project
+Tripay merchant account
+Discord server (for notifications)- **🎨 Next Themes** - Perfect dark mode in 2 lines of code
 
 ### 📋 Forms & Validation
 - **🎣 React Hook Form** - Performant forms with easy validation
