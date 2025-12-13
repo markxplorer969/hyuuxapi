@@ -1,166 +1,197 @@
 {
-  "openai": [
-    {
+  "openai": {
+    "oss": {
       "name": "OSS",
-      "desc": "OSS ai",
+      "description": "OSS AI text generation.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/ai/oss?text=&apikey="
+      "status": "active",
+      "endpoint": "/api/ai/oss",
+      "params": {
+        "text": { "type": "string", "required": true }
+      }
     },
-    {
-      "name": "Public AI",
-      "desc": "PublicAI chat generation",
-      "method": "POST",
-      "status": "Active",
-      "path": "/api/ai/public?question=&apikey="
-    },
-    {
+    "perplexed": {
       "name": "Perplexed",
-      "desc": "Perplexed search + AI answer",
+      "description": "Perplexed search + AI answer.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/ai/perplexed?text=&apikey="
+      "status": "active",
+      "endpoint": "/api/ai/perplexed",
+      "params": {
+        "text": { "type": "string", "required": true }
+      }
     },
-    {
+    "turboseek": {
       "name": "Turboseek",
-      "desc": "Turboseek multi-step AI search",
+      "description": "Turboseek multi-step AI search.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/ai/turboseek?text=&apikey="
+      "status": "active",
+      "endpoint": "/api/ai/turboseek",
+      "params": {
+        "text": { "type": "string", "required": true }
+      }
     }
-  ],
-  "downloader": [
-    {
-      "name": "All-in-One",
-      "desc": "Universal downloader for multiple platforms (X, Facebook, Instagram, TikTok, YouTube, etc.)",
-      "method": "GET, POST",
-      "status": "Active",
-      "path": "/api/download/allinone?url=&apikey="
+  },
+
+  "downloader": {
+    "all_in_one": {
+      "name": "All-in-One Downloader",
+      "description": "Universal downloader (X, Facebook, Instagram, TikTok, YouTube, dll).",
+      "method": ["GET"],
+      "status": "active",
+      "endpoint": "/api/download/allinone",
+      "params": {
+        "url": { "type": "string", "required": true }
+      }
     },
-    {
-      "name": "Capcut",
-      "desc": "Downloader capcut",
+    "capcut": {
+      "name": "Capcut Downloader",
+      "description": "Downloader CapCut.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/download/capcut?url=&apikey"
+      "status": "active",
+      "endpoint": "/api/download/capcut",
+      "params": {
+        "url": { "type": "string", "required": true }
+      }
     },
-    {
-      "name": "Facebook",
-      "desc": "Downloader facebook",
+    "facebook": {
+      "name": "Facebook Downloader",
+      "description": "Downloader Facebook video.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/download/facebook?url=&apikey="
+      "status": "active",
+      "endpoint": "/api/download/facebook",
+      "params": {
+        "url": { "type": "string", "required": true }
+      }
     },
-    {
-      "name": "SnackVideo",
-      "desc": "Downloader snack video",
+    "snackvideo": {
+      "name": "SnackVideo Downloader",
+      "description": "Downloader SnackVideo.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/download/snackvideo?url=&apikey="
+      "status": "active",
+      "endpoint": "/api/download/snackvideo",
+      "params": {
+        "url": { "type": "string", "required": true }
+      }
     },
-    {
-      "name": "Twitter",
-      "desc": "Downloader twitter",
+    "twitter": {
+      "name": "Twitter/X Downloader",
+      "description": "Downloader video Twitter/X.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/download/x?url=&apikey="
+      "status": "active",
+      "endpoint": "/api/download/x",
+      "params": {
+        "url": { "type": "string", "required": true }
+      }
     },
-    {
-      "name": "Mediafire",
-      "desc": "Downloader mediafire",
+    "mediafire": {
+      "name": "Mediafire Downloader",
+      "description": "Downloader Mediafire.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/download/mediafire?url=&apikey="
+      "status": "active",
+      "endpoint": "/api/download/mediafire",
+      "params": {
+        "url": { "type": "string", "required": true }
+      }
     }
-  ],
-  "random": [
-    {
+  },
+
+  "random": {
+    "waifu": {
       "name": "Random Waifu",
-      "desc": "Random foto waifu",
+      "description": "Foto waifu acak.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/random/waifu?apikey="
+      "status": "active",
+      "endpoint": "/api/random/waifu",
+      "params": {}
     }
-  ],
-  "tools": [
-    {
-      "name": "Website Screenshot",
-      "desc": "Full website screenshot using Imagy",
-      "method": "POST",
-      "status": "Active",
-      "path": "/api/tools/ssweb?url=&apikey="
-    }
-  ],
-  "api": [
-    {
-      "name": "Status Api",
-      "desc": "Server status and statistics",
+  },
+
+  "api": {
+    "status": {
+      "name": "API Status",
+      "description": "Server status and statistics.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/status"
+      "status": "active",
+      "endpoint": "/api/status",
+      "params": {}
     },
-    {
+    "metadata": {
       "name": "Metadata",
-      "desc": "Get API metadata and creator information",
+      "description": "API metadata and creator info.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/metadata"
+      "status": "active",
+      "endpoint": "/api/metadata",
+      "params": {}
     },
-    {
+    "endpoints_list": {
       "name": "Endpoints List",
-      "desc": "Get list of all available endpoints",
+      "description": "List semua endpoint tersedia.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/endpoints"
+      "status": "active",
+      "endpoint": "/api/endpoints",
+      "params": {}
     },
-    {
+    "health_check": {
       "name": "Health Check",
-      "desc": "Detailed health check with system metrics",
+      "description": "Health check + system metrics.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/health"
+      "status": "active",
+      "endpoint": "/api/health",
+      "params": {}
     },
-    {
+    "cache_stats": {
       "name": "Cache Statistics",
-      "desc": "Get cache performance statistics",
+      "description": "Statistik performa cache.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/cache/stats"
+      "status": "active",
+      "endpoint": "/api/cache/stats",
+      "params": {}
     },
-    {
+    "prometheus": {
       "name": "Prometheus Metrics",
-      "desc": "Get Prometheus metrics for monitoring",
+      "description": "Export metrics untuk Prometheus.",
       "method": "GET",
-      "status": "Active",
-      "path": "/metrics"
+      "status": "active",
+      "endpoint": "/metrics",
+      "params": {}
     },
-    {
+    "stats_realtime": {
       "name": "Realtime Statistics",
-      "desc": "Get realtime endpoint statistics and response times",
+      "description": "Statistik realtime endpoint & response time.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/stats/realtime"
+      "status": "active",
+      "endpoint": "/api/stats/realtime",
+      "params": {}
     },
-    {
+    "endpoint_stats": {
       "name": "Endpoint Stats",
-      "desc": "Get statistics for specific endpoint",
+      "description": "Statistik khusus per endpoint.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/stats/endpoint?path="
+      "status": "active",
+      "endpoint": "/api/stats/endpoint",
+      "params": {
+        "path": { "type": "string", "required": true }
+      }
     },
-    {
+    "top_endpoints": {
       "name": "Top Endpoints",
-      "desc": "Get most requested endpoints",
+      "description": "Endpoint paling sering diakses.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/stats/top?limit=10"
+      "status": "active",
+      "endpoint": "/api/stats/top",
+      "params": {
+        "limit": { "type": "number", "required": false, "default": 10 }
+      }
     },
-    {
+    "slowest_endpoints": {
       "name": "Slowest Endpoints",
-      "desc": "Get endpoints with highest response time",
+      "description": "Endpoint dengan response time paling lambat.",
       "method": "GET",
-      "status": "Active",
-      "path": "/api/stats/slowest?limit=10"
+      "status": "active",
+      "endpoint": "/api/stats/slowest",
+      "params": {
+        "limit": { "type": "number", "required": false, "default": 10 }
+      }
     }
-  ]
+  }
 }

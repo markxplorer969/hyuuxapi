@@ -1,502 +1,379 @@
-"use client";
+'use client';
 
-import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+
 import {
   ArrowLeft,
-  Play,
-  Loader2,
   Eye,
   EyeOff,
   Copy,
   Check,
-  AlertCircle,
-  X
+  Play,
+  Loader2,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
-type Method = "GET" | "POST";
+// Komponen Loading Terpusat
+const CenteredLoader = ({ text = "Loading..." }: { text?: string }) => (
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
+        <p className="text-lg text-muted-foreground">{text}</p>
+    </div>
+);
 
-interface Endpoint {
-  name: string;
-  desc: string;
-  method: Method;
-  path: string;
-  status: string;
-}
+// --- Komponen Sisi Klien Utama ---
+function TryPageContent() {
+  const params = useSearchParams();
 
-interface ParamDef {
-  name: string;
-  required: boolean;
-}
+  const category = params.get("category") || "";
+  const key = params.get("key") || "";
 
-type CodeExampleType = "curl" | "fetch" | "axios" | "python" | "httpie";
-
-export default function TryApiPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="p-8 text-center text-sm text-muted-foreground">
-          Loading…
-        </div>
-      }
-    >
-      <TryApiPageInner />
-    </Suspense>
-  );
-}
-
-function TryApiPageInner() {
-  const searchParams = useSearchParams();
-
-  const [endpoint, setEndpoint] = useState<Endpoint | null>(null);
-  const [origin, setOrigin] = useState("");
-  const [loading, setLoading] = useState(true);
-
+  const [endpoint, setEndpoint] = useState<any>(null);
   const [apiKey, setApiKey] = useState("");
-  const [showApiKey, setShowApiKey] = useState(false);
+  const [showKey, setShowKey] = useState(false);
 
-  const [queryParams, setQueryParams] = useState<Record<string, string>>({});
-  const [bodyParams, setBodyParams] = useState<Record<string, string>>({});
+  const [inputs, setInputs] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+  const [running, setRunning] = useState(false); // Status terpisah untuk 'Test'
 
-  const [apiLoading, setApiLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [apiResponse, setApiResponse] = useState<any>(null);
-  const [responseType, setResponseType] = useState("");
-
-  const [codeType, setCodeType] = useState<CodeExampleType>("curl");
-  const [codePickerOpen, setCodePickerOpen] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
-  const [copiedResponse, setCopiedResponse] = useState(false);
+  const [response, setResponse] = useState<any>(null);
+  const [responseType, setResponseType] = useState("none");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
+    fetch("/api/endpoints")
+      .then((r) => r.json())
+      .then((d) => {
+        const data = d.result?.[category]?.[key];
+        setEndpoint(data || null);
 
-  useEffect(() => {
-    const name = searchParams.get("name");
-    const path = searchParams.get("endpoint");
-    const method = searchParams.get("method");
+        if (data?.params) {
+          const initial: any = {};
+          Object.entries(data.params).forEach(([p, def]: [string, any]) => {
+            initial[p] = def.default !== undefined ? String(def.default) : "";
+          });
+          setInputs(initial);
+        }
 
-    if (!name || !path || !method) {
-      setLoading(false);
-      return;
-    }
-
-    const ep: Endpoint = {
-      name,
-      path,
-      method: method.toUpperCase() as Method,
-      desc: `${method.toUpperCase()} endpoint for ${name}`,
-      status: "Active"
-    };
-
-    setEndpoint(ep);
-
-    const params = extractParams(path);
-
-    setQueryParams(
-      params.reduce((acc, p) => {
-        acc[p.name] = "";
-        return acc;
-      }, {} as Record<string, string>)
-    );
-
-    if (ep.method === "POST") {
-      setBodyParams(
-        params.reduce((acc, p) => {
-          acc[p.name] = "";
-          return acc;
-        }, {} as Record<string, string>)
-      );
-    }
-
-    setLoading(false);
-  }, [searchParams]);
-
-  const extractParams = (path: string): ParamDef[] => {
-    if (!path.includes("?")) return [];
-    const query = path.split("?")[1];
-
-    return query
-      .split("&")
-      .map((pair) => {
-        const [name] = pair.split("=");
-        if (!name || name.toLowerCase() === "apikey") return null;
-        return { name, required: true };
+        setLoading(false);
       })
-      .filter(Boolean) as ParamDef[];
-  };
+      .catch(() => {
+          setLoading(false);
+          setError("Failed to fetch endpoint metadata.");
+      });
+  }, [category, key]);
 
-  const buildQueryString = () => {
-    const p = new URLSearchParams();
+  const run = async () => {
+    if (!endpoint) return;
+    if (!apiKey) {
+        setError("API Key is required.");
+        return;
+    }
 
-    Object.entries(queryParams).forEach(([key, val]) => {
-      if (val) p.append(key, val);
+    setError("");
+    setResponse(null);
+    setResponseType("none");
+    setRunning(true); // Mulai status Running
+
+    const method = Array.isArray(endpoint.method)
+      ? endpoint.method[0]
+      : endpoint.method;
+
+    const urlBase = endpoint.endpoint;
+
+    const query = new URLSearchParams();
+    const body: any = {};
+
+    let hasError = false;
+
+    Object.entries(inputs).forEach(([k, v]) => {
+      const value = String(v ?? ''); 
+      const paramDef = endpoint.params[k];
+      if (!paramDef) return;
+      
+      if (paramDef.required && !value) {
+        setError(`Parameter '${k}' is required.`);
+        hasError = true;
+        return;
+      }
+      
+      if (method === "GET") {
+          if (value) query.append(k, value);
+      } else {
+          // POST: Masukkan nilai ke body.
+          body[k] = value;
+      }
     });
 
-    if (apiKey) p.append("apikey", apiKey);
-
-    return p.toString() ? `?${p.toString()}` : "";
-  };
-
-  const runApi = async () => {
-    if (!endpoint) return;
-
-    if (!apiKey) {
-      setApiError("API key is required.");
-      return;
+    if (hasError) {
+        setRunning(false);
+        return;
     }
 
-    setApiLoading(true);
-    setApiError(null);
-    setApiResponse(null);
+    // Hanya tambahkan API key ke query jika methodnya GET
+    // Jika POST, API key akan dikirimkan melalui header 'x-api-key'
+    if (method === "GET") {
+        query.append("apikey", apiKey);
+    } 
 
+    // FINAL URL: Tidak ada query param lain selain yang diizinkan untuk GET
+    const finalURL =
+      method === "GET" ? `${urlBase}?${query.toString()}` : urlBase;
+      
     try {
-    const base = endpoint.path.split("?")[0].replace("/api/ai/publicai", "/api/ai/public");
-      const url = `${base}${buildQueryString()}`;
-
-      let options: RequestInit = {
-        method: endpoint.method,
+      const res = await fetch(finalURL, {
+        method,
         headers: {
-          "x-api-key": apiKey,
-          "Content-Type": "application/json"
-        }
-      };
+            // Penting: Kirim 'x-api-key' di header untuk semua method
+            "x-api-key": apiKey,
+            // Penting: Pastikan Content-Type untuk POST adalah JSON
+            "Content-Type": "application/json", 
+        },
+        body: method === "POST" ? JSON.stringify(body) : undefined,
+      });
 
-      if (endpoint.method === "POST") {
-        options.body = JSON.stringify(bodyParams);
+      // Penanganan error status non-200
+      if (!res.ok) {
+        const type = res.headers.get("content-type") || "";
+        let errorBody = `Status ${res.status}`;
+        
+        // Coba baca body untuk pesan error yang lebih detail
+        try {
+            if (type.includes("application/json")) {
+                const jsonError = await res.json();
+                errorBody += `: ${JSON.stringify(jsonError, null, 2)}`;
+            } else {
+                const textError = await res.text();
+                // Batasi panjang teks HTML/Error untuk menghindari overflow
+                errorBody += `: ${textError.substring(0, 200)}...`; 
+            }
+        } catch (e) {
+            // Jika gagal membaca body, biarkan errorBody tetap status saja
+        }
+
+        setError(`Request failed: ${errorBody}`);
+        return;
       }
 
-      const res = await fetch(url, options);
-
+      // Penanganan Response Sukses (res.ok)
       const type = res.headers.get("content-type") || "";
-
       if (type.includes("application/json")) {
-        setApiResponse(await res.json());
+        setResponse(await res.json());
         setResponseType("json");
       } else if (type.includes("image/")) {
-        setApiResponse(await res.blob());
+        setResponse(await res.blob());
         setResponseType("image");
       } else {
-        setApiResponse(await res.text());
+        setResponse(await res.text());
         setResponseType("text");
       }
     } catch (err: any) {
-      setApiError(err.message);
+      // Penanganan error network/cors
+      setError(`Network Error: ${err.message}`);
+    } finally {
+      setRunning(false); // Akhiri status Running
     }
-
-    setApiLoading(false);
   };
 
-  const clearAll = () => {
-    setQueryParams({});
-    setBodyParams({});
-    setApiResponse(null);
-    setApiError(null);
-    setResponseType("");
-  };
+  // Fungsi untuk menampilkan URL yang sedang dibangun (untuk cURL/kode)
+  const finalUrlDisplay = () => {
+      const urlBase = endpoint.endpoint;
+      const query = new URLSearchParams();
+      
+      Object.entries(inputs).forEach(([k, v]) => {
+        if (!endpoint.params[k]) return;
+        const value = String(v ?? '');
+        if (method === 'GET' && value) query.append(k, value);
+      });
+      
+      // Tambahkan apikey ke URL tampilan jika GET
+      if (method === 'GET' && apiKey) {
+          query.append('apikey', apiKey);
+      }
+      // Tambahkan placeholder apikey jika kosong
+      else if (method === 'GET' && !apiKey) {
+          query.append('apikey', 'YOUR_API_KEY');
+      }
 
-  const codeExample = (): string => {
-    if (!endpoint) return "";
-
-  const base = endpoint.path.split("?")[0].replace("/api/ai/publicai", "/api/ai/public");
-    const qs = buildQueryString().replace(apiKey, "YOUR_API_KEY");
-    const url = `${origin}${base}${qs}`;
-    const body = endpoint.method === "POST" ? JSON.stringify(bodyParams, null, 2) : null;
-
-    switch (codeType) {
-      case "curl":
-        return `curl -X ${endpoint.method} "${url}" \\
-  -H "x-api-key: YOUR_API_KEY"${body ? ` \\
-  -H "Content-Type: application/json" \\
-  -d '${JSON.stringify(bodyParams)}'` : ""}`;
-      case "fetch":
-        return `fetch("${url}", {
-  method: "${endpoint.method}",
-  headers: {
-    "x-api-key": "YOUR_API_KEY",
-    "Content-Type": "application/json"
-  }${
-    body
-      ? `,
-  body: JSON.stringify(${JSON.stringify(bodyParams, null, 2)})
-`
-      : ""
-  }
-}).then(r => r.json()).then(console.log);`;
-      case "axios":
-        return `axios({
-  url: "${url}",
-  method: "${endpoint.method}",
-  headers: {
-    "x-api-key": "YOUR_API_KEY",
-    "Content-Type": "application/json"
-  }${
-    body
-      ? `,
-  data: ${JSON.stringify(bodyParams, null, 2)}`
-      : ""
-  }
-}).then(r => console.log(r.data));`;
-      case "python":
-        return `import requests
-
-url = "${url}"
-headers = {
-  "x-api-key": "YOUR_API_KEY",
-  "Content-Type": "application/json"
-}
-
-response = requests.${endpoint.method.toLowerCase()}(url, headers=headers${
-          body ? `, json=${JSON.stringify(bodyParams, null, 2)}` : ""
-        })
-print(response.json())`;
-      case "httpie":
-        return `http ${endpoint.method} "${url}" \\
-  x-api-key:YOUR_API_KEY${
-    body ? ` \\
-  <<< '${JSON.stringify(bodyParams)}'` : ""
-  }`;
-    }
-
-    return "";
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin" />
-      </div>
-    );
+      const queryString = query.toString();
+      
+      return `${urlBase}${queryString ? '?' + queryString : ''}`;
   }
 
-  if (!endpoint) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Endpoint not found.
-      </div>
-    );
-  }
+  // Menampilkan Centered Loader jika Loading Metadata
+  if (loading) return <CenteredLoader text="Fetching endpoint details..." />;
 
-  const paramDefs = extractParams(endpoint.path);
+  // Cek jika endpoint tidak ditemukan
+  if (!endpoint) return <div className="p-10 text-center text-lg text-red-500">Endpoint not found. Check category and key parameters.</div>;
 
+  const method = Array.isArray(endpoint.method)
+    ? endpoint.method[0]
+    : endpoint.method;
+    
+  // --- Tampilan Utama ---
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <main className="container mx-auto px-4 pt-20 max-w-3xl space-y-10 pb-10">
-        <Button variant="ghost" size="sm" onClick={() => (window.location.href = "/docs")}>
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to docs
-        </Button>
+    <div className="min-h-screen px-4 pt-24 container max-w-3xl pb-20">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => (window.location.href = "/docs")}
+        className="mb-4"
+      >
+        <ArrowLeft className="w-4 h-4 mr-1" />
+        Back
+      </Button>
 
-        <section>
-          <h1 className="text-2xl font-semibold">{endpoint.name}</h1>
-          <p className="text-sm text-muted-foreground">{endpoint.desc}</p>
+      <h1 className="text-3xl font-bold">{endpoint.name}</h1>
+      <p className="text-muted-foreground">{endpoint.description}</p>
 
-          <div className="mt-3 flex flex-col gap-2 rounded-md border bg-muted/40 px-3 py-3 text-sm">
-            <Badge
-              variant="outline"
-              className={cn(
-                "font-mono text-[11px]",
-                endpoint.method === "GET" && "border-emerald-500 text-emerald-500",
-                endpoint.method === "POST" && "border-blue-500 text-blue-500"
-              )}
-            >
-              {endpoint.method}
-            </Badge>
-            <code className="text-xs break-all">
-              {origin}
-              {endpoint.path.split("?")[0]}
-            </code>
-          </div>
-        </section>
+      <div className="mt-3 flex items-center gap-2">
+        <Badge>{method}</Badge>
+        <code className="text-sm text-muted-foreground break-all">
+          {finalUrlDisplay()}
+        </code>
+      </div>
 
-        {/* API KEY */}
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold">Authentication</h2>
+      {/* API KEY */}
+      <div className="mt-8">
+        <p className="font-semibold mb-1">API Key *</p>
+        <div className="relative">
+          <Input
+            type={showKey ? "text" : "password"}
+            placeholder="Your API key..."
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+          />
+          <button
+            onClick={() => setShowKey(!showKey)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground"
+          >
+            {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
 
-          <Label className="text-xs">apikey *</Label>
-          <div className="relative max-w-md">
-            <Input
-              type={showApiKey ? "text" : "password"}
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Your API key..."
-              className="pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowApiKey((s) => !s)}
-              className="absolute inset-y-0 right-2 flex items-center text-muted-foreground"
-            >
-              {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </section>
+      {/* PARAMS */}
+      <div className="mt-8">
+        <p className="font-semibold mb-3">{method === 'GET' ? 'Query Parameters' : 'Body Parameters'}</p>
 
-        {/* PARAMS */}
-        <section className="space-y-4">
-          <h2 className="text-base font-semibold">Parameters</h2>
-
-          {paramDefs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">This endpoint has no parameters.</p>
-          ) : (
-            <div className="space-y-4">
-              {paramDefs.map((p) => (
-                <div key={p.name} className="space-y-1">
-                  <Label className="text-xs">{p.name} *</Label>
-
-                  {endpoint.method === "POST" ? (
-                    <Input
-                      value={bodyParams[p.name] || ""}
-                      onChange={(e) =>
-                        setBodyParams((prev) => ({ ...prev, [p.name]: e.target.value }))
-                      }
-                      placeholder={`Enter ${p.name}...`}
-                      className="max-w-md"
-                    />
-                  ) : (
-                    <Input
-                      value={queryParams[p.name] || ""}
-                      onChange={(e) =>
-                        setQueryParams((prev) => ({ ...prev, [p.name]: e.target.value }))
-                      }
-                      placeholder={`Enter ${p.name}...`}
-                      className="max-w-md"
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-3 pt-2">
-            <Button onClick={runApi} disabled={apiLoading}>
-              {apiLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-              Test API
-            </Button>
-
-            <Button variant="outline" onClick={clearAll} disabled={apiLoading}>
-              Clear input
-            </Button>
-          </div>
-        </section>
-
-        {/* CODE EXAMPLES */}
-        <section className="space-y-3">
-          <div className="flex justify-between">
-            <h2 className="text-base font-semibold">Code Example</h2>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setCodePickerOpen(true)}>
-                {codeType.toUpperCase()}
-              </Button>
-
-              <Button variant="outline" size="icon" onClick={() => copyText(codeExample())}>
-                {copiedCode ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              </Button>
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-slate-950 text-slate-50">
-            <pre className="p-4 text-xs whitespace-pre-wrap">{codeExample()}</pre>
-          </div>
-
-          {codePickerOpen && (
-            <div className="fixed inset-0 bg-black/40 flex items-end justify-center z-40">
-              <div className="bg-background w-full max-w-sm p-4 rounded-t-2xl shadow-lg">
-                <div className="flex items-center justify-between pb-3">
-                  <p>Pilih Bahasa</p>
-                  <button onClick={() => setCodePickerOpen(false)}>
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="divide-y rounded-lg border">
-                  {(["curl", "fetch", "axios", "python", "httpie"] as CodeExampleType[]).map(
-                    (t) => (
-                      <button
-                        key={t}
-                        onClick={() => {
-                          setCodeType(t);
-                          setCodePickerOpen(false);
-                        }}
-                        className={cn(
-                          "w-full flex justify-between px-4 py-3",
-                          codeType === t && "bg-muted"
-                        )}
-                      >
-                        {t.toUpperCase()}
-                      </button>
-                    )
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* RESPONSE */}
-        <section className="space-y-3">
-          <div className="flex justify-between">
-            <h2 className="text-base font-semibold">Response</h2>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => copyResponse()}
-              disabled={!apiResponse && !apiError}
-            >
-              {copiedResponse ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            </Button>
-          </div>
-
-          <div className="rounded-lg border bg-slate-950 text-slate-50 h-96 overflow-auto p-4 text-xs">
-            {!apiResponse && !apiError && <p>No response yet.</p>}
-
-            {apiError && (
-              <div className="text-red-400 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" /> {apiError}
-              </div>
-            )}
-
-            {apiResponse && responseType === "json" && (
-              <pre>{JSON.stringify(apiResponse, null, 2)}</pre>
-            )}
-
-            {apiResponse && responseType === "text" && <pre>{apiResponse}</pre>}
-
-            {apiResponse && responseType === "image" && (
-              <img
-                src={URL.createObjectURL(apiResponse)}
-                className="max-w-full max-h-full object-contain mx-auto"
+        <div className="space-y-4">
+          {Object.entries(endpoint.params || {}).map(([p, def]: any) => (
+            <div key={p}>
+              <p className="mb-1 font-medium">
+                {p} {def.required && "*"}
+              </p>
+              <Input
+                placeholder={`Enter ${p}... (${def.type})`}
+                value={inputs[p]}
+                onChange={(e) =>
+                  setInputs({ ...inputs, [p]: e.target.value })
+                }
               />
-            )}
-          </div>
-        </section>
-      </main>
+              <p className="text-xs text-muted-foreground mt-1">
+                {def.type} {def.default !== undefined ? `(Default: ${String(def.default)})` : ''}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-3 mt-5">
+          <Button onClick={run} disabled={running}>
+            {running ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+            {running ? 'Running...' : 'Test'}
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => {
+              const cleared: any = {};
+              Object.entries(endpoint.params || {}).forEach(([k, def]: [string, any]) => {
+                  cleared[k] = def.default !== undefined ? String(def.default) : "";
+              });
+              setInputs(cleared);
+              setResponse(null);
+              setError("");
+              setResponseType("none");
+            }}
+          >
+            Clear
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            onClick={async () => {
+                const url = finalUrlDisplay();
+                let curl = `curl -X ${method} "${url}" \\
+  -H "x-api-key: ${apiKey || 'YOUR_API_KEY'}"`;
+
+                if (method === 'POST') {
+                    curl += ` \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify(inputs)}'`;
+                }
+
+                await navigator.clipboard.writeText(curl);
+            }}
+          >
+            <Copy className="w-4 h-4 mr-1" />
+            Copy cURL
+          </Button>
+        </div>
+      </div>
+
+      {/* RESPONSE */}
+      <div className="mt-10">
+        <div className="flex items-center justify-between mb-2">
+            <p className="font-semibold">Response</p>
+            <Badge variant="secondary" className="text-xs">
+                {responseType.toUpperCase()}
+            </Badge>
+        </div>
+
+        <div className="bg-black/90 text-white rounded-lg p-4 max-h-[400px] overflow-auto relative">
+          {error && (
+            <p className="text-red-400 whitespace-pre-wrap">{error}</p>
+          )}
+
+          {!response && !error && (
+            <p className="text-muted-foreground">No response yet.</p>
+          )}
+
+          {response && responseType === "json" && (
+            <pre className="whitespace-pre-wrap text-sm">
+              {JSON.stringify(response, null, 2)}
+            </pre>
+          )}
+
+          {response && responseType === "text" && (
+            <pre className="whitespace-pre-wrap text-sm">{response}</pre>
+          )}
+
+          {response && responseType === "image" && (
+            <div className="w-full h-full flex items-center justify-center">
+                <img
+                src={URL.createObjectURL(response)}
+                className="max-w-full max-h-[360px] object-contain rounded-md"
+                alt="API Response Image"
+                />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
+}
 
-  function copyText(text: string) {
-    navigator.clipboard.writeText(text);
-    setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 1200);
-  }
-
-  function copyResponse() {
-    if (apiResponse) {
-      const text =
-        typeof apiResponse === "string"
-          ? apiResponse
-          : JSON.stringify(apiResponse, null, 2);
-
-      navigator.clipboard.writeText(text);
-      setCopiedResponse(true);
-      setTimeout(() => setCopiedResponse(false), 1200);
-    }
-  }
+// --- Komponen Pembungkus Suspense ---
+export default function TryPage() {
+    return (
+        <Suspense fallback={<CenteredLoader text="Loading page components..." />}>
+            <TryPageContent />
+        </Suspense>
+    );
 }

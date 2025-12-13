@@ -1,3 +1,6 @@
+/**
+/components/layout/Navbar.tsx
+*/
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -22,27 +25,23 @@ const navItems = [
   { name: 'Docs', href: '/docs' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Status', href: '/status' },
-];
 
-const userNavItems = [
-  { name: 'Dashboard', href: '/dashboard' },
-  { name: 'API Keys', href: '/api-keys' },
-  { name: 'Profile', href: '/profile' },
+  // NEW
+  { name: 'Contact', href: '/contact' },
+  { name: 'Terms', href: '/terms' },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { user, logout, loading } = useAuth();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 0);
-    };
-
+    const handleScroll = () => setScrolled(window.scrollY > 0);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -64,7 +63,8 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
+            
+            {/* LOGO */}
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">S</span>
@@ -74,8 +74,9 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* DESKTOP NAV */}
             <div className="hidden md:flex items-center space-x-8">
+
               <div className="flex space-x-1">
                 {navItems.map((item) => (
                   <Link
@@ -93,9 +94,10 @@ export default function Navbar() {
                 ))}
               </div>
 
-              {/* Auth Buttons */}
+              {/* AUTH BUTTONS */}
               <div className="flex items-center space-x-3">
-                {/* Theme Toggle */}
+
+                {/* THEME TOGGLE */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -104,9 +106,8 @@ export default function Navbar() {
                 >
                   <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                   <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span className="sr-only">Toggle theme</span>
                 </Button>
-                
+
                 {loading ? (
                   <div className="w-16 h-9 bg-muted animate-pulse rounded-lg" />
                 ) : user ? (
@@ -117,22 +118,21 @@ export default function Navbar() {
                         {user.displayName || user.email}
                       </Button>
                     </DropdownMenuTrigger>
+
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push('/dashboard')} className="cursor-pointer">
-                        <User className="w-4 h-4 mr-2" />
+                      <DropdownMenuItem onClick={() => router.push('/dashboard')}>
                         Dashboard
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/api-keys')} className="cursor-pointer">
-                        <User className="w-4 h-4 mr-2" />
+                      <DropdownMenuItem onClick={() => router.push('/api-keys')}>
                         API Keys
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/profile')} className="cursor-pointer">
-                        <User className="w-4 h-4 mr-2" />
+                      <DropdownMenuItem onClick={() => router.push('/profile')}>
                         Profile
                       </DropdownMenuItem>
+
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-                        <LogOut className="w-4 h-4 mr-2" />
+
+                      <DropdownMenuItem onClick={handleLogout}>
                         Logout
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -142,7 +142,12 @@ export default function Navbar() {
                     <Button variant="ghost" size="sm" onClick={() => router.push('/login')}>
                       Login
                     </Button>
-                    <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" onClick={() => router.push('/login')}>
+
+                    <Button
+                      size="sm"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      onClick={() => router.push('/login')}
+                    >
                       Get Started
                     </Button>
                   </>
@@ -150,66 +155,32 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Mobile Menu */}
+            {/* MOBILE NAV */}
             <div className="md:hidden flex items-center space-x-2">
-              {/* Mobile Auth Buttons */}
-              <div className="flex items-center space-x-2">
-                {/* Theme Toggle */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="h-9 w-9"
-                >
-                  <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
-                
-                {loading ? (
-                  <div className="w-16 h-9 bg-muted animate-pulse rounded-lg" />
-                ) : user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                        <User className="w-4 h-4" />
-                        <span className="hidden sm:inline">{user.displayName || user.email}</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push('/profile')} className="cursor-pointer">
-                        <User className="w-4 h-4 mr-2" />
-                        Profile
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Logout
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <>
-                    <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => router.push('/login')}>
-                      Login
-                    </Button>
-                    <Button size="sm" className="hidden sm:inline-flex bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" onClick={() => router.push('/login')}>
-                      Get Started
-                    </Button>
-                  </>
-                )}
-              </div>
+              
+              {/* MOBILE THEME TOGGLE */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="h-9 w-9"
+              >
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </Button>
 
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9">
-                    <Menu className="h-4 w-4" />
-                    <span className="sr-only">Open menu</span>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                  <div className="flex flex-col space-y-6 mt-8">
-                    {/* Mobile Navigation */}
+
+                <SheetContent side="right" className="w-[300px]">
+
+                  <div className="mt-8 flex flex-col space-y-4">
+
+                    {/* MOBILE NAV LINKS */}
                     <div className="flex flex-col space-y-2">
                       {navItems.map((item) => (
                         <Link
@@ -217,7 +188,7 @@ export default function Navbar() {
                           href={item.href}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className={cn(
-                            "px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                            "px-4 py-3 rounded-lg text-sm font-medium",
                             pathname === item.href
                               ? "text-blue-600 dark:text-blue-400 bg-accent/50"
                               : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
@@ -228,57 +199,33 @@ export default function Navbar() {
                       ))}
                     </div>
 
-                    {/* Mobile Auth Section */}
-                    <div className="border-t border-border pt-6">
-                      <div className="flex flex-col space-y-3">
-                        {/* Theme Toggle */}
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start"
-                          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        >
-                          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 mr-2" />
-                          <Moon className="h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 mr-2" />
-                          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                        </Button>
-                        
-                        {loading ? (
-                          <div className="w-full h-9 bg-muted animate-pulse rounded-lg" />
-                        ) : user ? (
-                          <>
-                            <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/dashboard')}>
-                              <User className="w-4 h-4 mr-2" />
-                              Dashboard
-                            </Button>
-                            <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/api-keys')}>
-                              <User className="w-4 h-4 mr-2" />
-                              API Keys
-                            </Button>
-                            <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/profile')}>
-                              <User className="w-4 h-4 mr-2" />
-                              Profile
-                            </Button>
-                            <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-                              <LogOut className="w-4 h-4 mr-2" />
-                              Logout
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button variant="ghost" className="w-full justify-start" onClick={() => {router.push('/login'); setIsMobileMenuOpen(false);}}>
-                              Login
-                            </Button>
-                            <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" onClick={() => {router.push('/login'); setIsMobileMenuOpen(false);}}>
-                              Get Started
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                    <div className="border-t pt-6 space-y-3">
+
+                      {user ? (
+                        <>
+                          <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/dashboard')}>Dashboard</Button>
+                          <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/api-keys')}>API Keys</Button>
+                          <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/profile')}>Profile</Button>
+
+                          <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+                            Logout
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button variant="ghost" className="w-full justify-start" onClick={() => router.push('/login')}>Login</Button>
+                          <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" onClick={() => router.push('/login')}>
+                            Get Started
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
+
                 </SheetContent>
               </Sheet>
             </div>
+
           </div>
         </div>
       </nav>

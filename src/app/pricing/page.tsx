@@ -1,3 +1,8 @@
+/**
+ * /app/pricing/page.tsx
+ * UPDATED VERSION — Already Tripay-Compatible
+ */
+
 'use client';
 
 import { useState } from 'react';
@@ -5,10 +10,12 @@ import { useRouter } from 'next/navigation';
 import {
   Check,
   Crown,
-  Key,
   MessageCircle,
   Zap,
   Wallet,
+  ShieldCheck,
+  BadgeCheck,
+  ArrowRight
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -20,6 +27,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -29,6 +37,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+
 import { cn } from '@/lib/utils';
 import { PLANS, formatPrice } from '@/lib/plans';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,17 +46,14 @@ import PaymentMethodSelector from '@/components/PaymentMethodSelector';
 export default function PricingPage() {
   const router = useRouter();
   const { user } = useAuth();
+
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<string>('QRIS');
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   const handleBuyPlan = async (planId: string) => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-
+    if (!user) return router.push('/login');
     setSelectedPlan(planId);
     setPaymentDialogOpen(true);
   };
@@ -71,244 +77,162 @@ export default function PricingPage() {
         }),
       });
 
-      let data;
-      try {
-        data = await res.json();
-      } catch (parseError) {
-        console.error('Failed to parse response:', parseError);
-        data = { error: 'Invalid response from server' };
-      }
-
-      console.log('Payment creation response:', {
-        status: res.status,
-        ok: res.ok,
-        data
-      });
-
-      // If real payment fails due to IP, try mock
-      if (!res.ok && data.error?.includes('Unauthorized IP')) {
-        console.log('Real payment failed due to IP, trying mock...');
-        try {
-          const mockRes = await fetch('/api/payment/mock-create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId: user.uid,
-              planId: selectedPlan,
-              name: user.displayName || 'User',
-              email: user.email || 'user@example.com',
-              method: selectedMethod,
-            }),
-          });
-          
-          const mockData = await mockRes.json();
-          console.log('Mock payment response:', mockData);
-          
-          if (mockData.success) {
-            data = mockData;
-          } else {
-            console.error('Mock payment also failed:', mockData);
-          }
-        } catch (mockError) {
-          console.error('Mock payment error:', mockError);
-          data = { error: 'Both real and mock payments failed' };
-        }
-      }
-      
-      if (!res.ok && (!data || !data.success)) {
-        console.error('Payment creation failed:', {
-          status: res.status,
-          data,
-          selectedPlan,
-          selectedMethod
-        });
-        
-        const errorMessage = data?.error || 'Failed to create payment';
-        
-        // Handle specific error cases
-        if (errorMessage.includes('Unauthorized IP') || errorMessage.includes('Whitelist IP')) {
-          alert('Payment Error: Server IP is not whitelisted. Please contact the administrator to add IP 8.217.199.231 to Tripay merchant whitelist.');
-        } else if (errorMessage.includes('Sandbox') || errorMessage.includes('credential')) {
-          alert('Payment Configuration Error: Please check Tripay credentials and environment settings.');
-        } else if (errorMessage.includes('Missing fields')) {
-          alert('Payment Error: Required information is missing. Please try again.');
-        } else if (errorMessage.includes('Invalid plan')) {
-          alert('Payment Error: Invalid plan selected. Please try again.');
-        } else {
-          alert(`${errorMessage}. Please try again or contact support.`);
-        }
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Gagal membuat pembayaran.');
         return;
       }
 
-      if (data.success && data.redirect_url) {
-        // Redirect directly to Tripay payment page
-        window.location.href = data.redirect_url;
-      } else {
-        // Fallback to payment page if redirect_url is not available
-        router.push(`/payment?ref=${data.merchant_ref}`);
+      if (data.redirect_url) {
+        return (window.location.href = data.redirect_url);
       }
+
+      router.push(`/payment?ref=${data.merchant_ref}`);
     } catch (e: any) {
-      console.error('Payment creation exception:', {
-        error: e,
-        message: e?.message,
-        stack: e?.stack,
-        selectedPlan,
-        selectedMethod
-      });
-      
-      let errorMessage = 'Failed to create payment. Please try again later.';
-      
-      if (e?.message) {
-        if (e.message.includes('Failed to fetch')) {
-          errorMessage = 'Network error. Please check your internet connection and try again.';
-        } else if (e.message.includes('AbortError')) {
-          errorMessage = 'Request timed out. Please try again.';
-        } else {
-          errorMessage = e.message;
-        }
-      }
-      
-      alert(errorMessage);
+      alert(e?.message || 'Payment failed.');
     } finally {
       setLoadingPlan(null);
       setSelectedPlan(null);
     }
   };
 
-  const handleContactDev = () => {
-    window.open('https://wa.me/6285123456', '_blank');
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="mb-10">
-          <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 px-4 py-1 text-xs font-medium text-blue-700 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 dark:text-blue-300">
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
+
+        {/* HEADER */}
+        <div className="mb-12">
+          <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 dark:bg-blue-900/30 px-4 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
             <Crown className="h-4 w-4" />
-            Flexible plans for every stage
+            Official API Service Plans
           </div>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-            Choose your <span className="text-blue-600 dark:text-blue-400">API plan</span>
+
+          <h1 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight">
+            Pilih <span className="text-blue-600 dark:text-blue-400">Paket API</span> Anda
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            Upgrade kapan saja. Pilih metode pembayaran yang nyaman untuk Anda.
+
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Semua paket menampilkan harga dalam mata uang Rupiah (IDR). Pembayaran aman menggunakan QRIS.
           </p>
         </div>
 
-        {/* Cards */}
+        {/* TRIPAY REQUIREMENTS */}
+        <section className="mb-12 space-y-6">
+          <Card className="border border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-600" />
+                Informasi Produk
+              </CardTitle>
+              <CardDescription>
+                Berikut adalah layanan digital yang kami jual sebagai syarat verifikasi Tripay.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm leading-relaxed">
+              Slowly API menyediakan layanan REST API premium seperti AI text, downloader, tools web,
+              dan layanan data lainnya. Pengguna akan mendapatkan batas penggunaan API harian sesuai paket yang dipilih.
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BadgeCheck className="h-5 w-5 text-green-600" />
+                Cara Kerja Pembelian
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground space-y-2">
+              <p>1. Pilih paket API sesuai kebutuhan Anda.</p>
+              <p>2. Lakukan pembayaran menggunakan QRIS.</p>
+              <p>3. Setelah pembayaran berhasil, sistem akan otomatis mengaktifkan paket Anda.</p>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* PLANS GRID */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {PLANS.map((plan) => {
             const isFree = plan.price === 0;
-            const isPopular = plan.popular;
-
             return (
               <Card
                 key={plan.id}
                 className={cn(
-                  'flex flex-col justify-between border border-border/60 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg',
-                  isPopular && 'border-blue-500 shadow-blue-500/20'
+                  'flex flex-col justify-between shadow hover:shadow-lg transition-all border-border/50',
+                  plan.popular && 'border-blue-500 shadow-blue-500/20'
                 )}
               >
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold">
-                      {plan.name}
-                    </CardTitle>
-                    {isPopular && (
-                      <Badge className="bg-blue-600 text-xs text-white">
-                        Popular
-                      </Badge>
+                  <CardTitle className="flex items-center justify-between">
+                    {plan.name}
+                    {plan.popular && <Badge className="bg-blue-600">Popular</Badge>}
+                  </CardTitle>
+
+                  <CardDescription>{plan.description}</CardDescription>
+
+                  <div className="mt-4">
+                    <span className={cn("text-3xl font-bold", plan.color)}>
+                      {isFree ? 'Free' : formatPrice(plan.price)}
+                    </span>
+                    {!isFree && (
+                      <span className="ml-1 text-sm text-muted-foreground">/ bulan</span>
                     )}
                   </div>
-                  <CardDescription className="mt-1 text-xs md:text-sm">
-                    {plan.description}
-                  </CardDescription>
 
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className={cn('text-2xl font-bold', plan.color)}>
-                      {isFree
-                        ? 'Free'
-                        : formatPrice(plan.price) + '/bulan'}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
                     <Badge variant="outline" className="flex items-center gap-1">
                       <Zap className="h-3 w-3" />
                       {plan.apiLimit.toLocaleString()} calls / hari
                     </Badge>
                     <Badge variant="outline" className="flex items-center gap-1">
-                      <Key className="h-3 w-3" />
-                      Plan: {plan.id}
+                      <Wallet className="h-3 w-3" /> ID: {plan.id}
                     </Badge>
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-2">
-                  <ul className="space-y-2 text-xs md:text-sm">
-                    {plan.features.slice(0, 5).map((feature) => (
-                      <li key={feature} className="flex items-start gap-2">
-                        <span className="mt-0.5 rounded-full bg-emerald-100 p-0.5 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
-                          <Check className="h-3 w-3" />
-                        </span>
-                        <span>{feature}</span>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    {plan.features.slice(0, 5).map((f) => (
+                      <li key={f} className="flex gap-2">
+                        <Check className="h-4 w-4 text-green-600 mt-0.5" />
+                        {f}
                       </li>
                     ))}
                   </ul>
                 </CardContent>
 
-                <CardFooter className="mt-2 flex flex-col gap-2 pt-2">
+                {/* FOOTER */}
+                <CardFooter className="flex flex-col gap-2">
                   <Dialog open={paymentDialogOpen && selectedPlan === plan.id} onOpenChange={setPaymentDialogOpen}>
                     <DialogTrigger asChild>
                       <Button
-                        size="sm"
-                        className="w-full justify-center"
-                        disabled={loadingPlan === plan.id || isFree}
+                        className="w-full"
+                        disabled={isFree || loadingPlan === plan.id}
                         onClick={() => handleBuyPlan(plan.id)}
                       >
-                        {isFree ? (
-                          'Current Plan'
-                        ) : loadingPlan === plan.id ? (
-                          'Processing...'
-                        ) : (
-                          <>
-                            <Wallet className="mr-2 h-4 w-4" />
-                            Buy Plan
-                          </>
-                        )}
+                        {isFree ? 'Current Plan' : 'Beli Paket'}
                       </Button>
                     </DialogTrigger>
+
                     <DialogContent className="sm:max-w-[500px]">
                       <DialogHeader>
                         <DialogTitle>Pilih Metode Pembayaran</DialogTitle>
                         <DialogDescription>
-                          Pilih metode pembayaran yang Anda inginkan untuk {plan.name}
+                          Paket: <b>{plan.name}</b>
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="space-y-4">
-                        <PaymentMethodSelector
-                          selectedMethod={selectedMethod}
-                          onMethodChange={setSelectedMethod}
-                          disabled={loadingPlan !== null}
-                        />
-                        <div className="flex gap-3 pt-4">
-                          <Button
-                            variant="outline"
-                            onClick={() => setPaymentDialogOpen(false)}
-                            disabled={loadingPlan !== null}
-                            className="flex-1"
-                          >
-                            Batal
-                          </Button>
-                          <Button
-                            onClick={confirmPayment}
-                            disabled={loadingPlan !== null}
-                            className="flex-1"
-                          >
-                            {loadingPlan ? 'Processing...' : `Bayar ${formatPrice(plan.price)}`}
-                          </Button>
-                        </div>
+
+                      <PaymentMethodSelector
+                        selectedMethod={selectedMethod}
+                        onMethodChange={setSelectedMethod}
+                      />
+
+                      <div className="flex gap-3 mt-4">
+                        <Button variant="outline" className="flex-1" onClick={() => setPaymentDialogOpen(false)}>
+                          Batal
+                        </Button>
+                        <Button className="flex-1" onClick={confirmPayment}>
+                          Bayar {formatPrice(plan.price)}
+                        </Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -316,17 +240,18 @@ export default function PricingPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="w-full justify-center"
-                    onClick={handleContactDev}
+                    className="w-full"
+                    onClick={() => window.open('https://wa.me/6285123456', '_blank')}
                   >
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Contact Dev
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Contact Developer
                   </Button>
                 </CardFooter>
               </Card>
             );
           })}
         </div>
+
       </div>
     </div>
   );
