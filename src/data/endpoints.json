@@ -1,0 +1,10 @@
+{
+  "random": [
+    { "name": "Blue Archive", "desc": "Random foto blue archive", "method": "GET", "status": "Active", "path": "/api/random/ba" },
+    { "name": "Random Waifu", "desc": "Random foto waifu", "method": "GET", "status": "Active", "path": "/api/random/waifu" },
+    { "name": "Pap Ayang", "desc": "Random pap ayang", "method": "GET", "status": "Active", "path": "/api/random/papayang" }
+  ],
+  "tools": [
+    { "name": "Unblur", "desc": "Convert image to unblur", "method": "GET", "status": "Active", "path": "/api/tools/unblur?url=" }
+  ]
+}

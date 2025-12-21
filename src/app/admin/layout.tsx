@@ -324,7 +324,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main content */}
-      <div className="pt-20 lg:pl-64">
+      <div className="pt-8 lg:pl-64">
         {/* Mobile toggle button (floating) */}
         <div className="fixed bottom-6 right-4 z-40 lg:hidden">
           <Button

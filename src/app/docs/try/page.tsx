@@ -218,7 +218,7 @@ function TryPageContent() {
     
   // --- Tampilan Utama ---
   return (
-    <div className="min-h-screen px-4 pt-24 container max-w-3xl pb-20">
+    <div className="min-h-screen px-4 pt-8 container max-w-3xl pb-20">
       <Button
         variant="ghost"
         size="sm"
