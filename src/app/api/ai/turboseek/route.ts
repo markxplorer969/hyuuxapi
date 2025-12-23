@@ -3,36 +3,41 @@ import { adminDb, adminCollections, Timestamp } from '@/lib/firebase-admin';
 import axios from 'axios';
 
 async function turboseek(question: string) {
-  const inst = axios.create({
-    baseURL: 'https://www.turboseek.io/api',
-    headers: {
-      origin: 'https://www.turboseek.io',
-      referer: 'https://www.turboseek.io/',
-      'user-agent': 'Mozilla/5.0',
-    },
-  });
+  try {
+    const inst = axios.create({
+      baseURL: 'https://www.turboseek.io/api',
+      headers: {
+        origin: 'https://www.turboseek.io',
+        referer: 'https://www.turboseek.io/',
+        'user-agent': 'Mozilla/5.0',
+      },
+    });
 
-  const { data: sources } = await inst.post('/getSources', { question });
-  const { data: similarQuestions } = await inst.post('/getSimilarQuestions', {
-    question,
-    sources,
-  });
-  const { data: answer } = await inst.post('/getAnswer', { question, sources });
+    const { data: sources } = await inst.post('/getSources', { question });
+    const { data: similarQuestions } = await inst.post('/getSimilarQuestions', {
+      question,
+      sources,
+    });
+    const { data: answer } = await inst.post('/getAnswer', { question, sources });
 
-  const cleaned =
-    answer
-      .match(/<p>(.*?)<\/p>/gs)
-      ?.map((m: string) =>
-        m.replace(/<\/?(p|strong|em|b|i|u)[^>]*>/g, '').replace(/<\/?[^>]+>/g, '')
-      )
-      .join('\n\n') ||
-    answer.replace(/<\/?[^>]+>/g, '').trim();
+    const cleaned =
+      answer
+        .match(/<p>(.*?)<\/p>/gs)
+        ?.map((m: string) =>
+          m.replace(/<\/?(p|strong|em|b|i|u)[^>]*>/g, '').replace(/<\/?[^>]+>/g, '')
+        )
+        .join('\n\n') ||
+      answer.replace(/<\/?[^>]+>/g, '').trim();
 
-  return {
-    answer: cleaned,
-    sources: sources.map((s: any) => s.url),
-    similarQuestions,
-  };
+    return {
+      answer: cleaned,
+      sources: sources.map((s: any) => s.url),
+      similarQuestions,
+    };
+  } catch (error) {
+    console.error("Turboseek API Error:", error);
+    throw new Error(`Failed to call Turboseek API: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function GET(request: NextRequest) {

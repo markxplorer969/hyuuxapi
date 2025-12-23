@@ -3,36 +3,41 @@ import { adminDb, adminCollections, Timestamp } from '@/lib/firebase-admin';
 import axios from 'axios';
 
 async function perplexed(question: string) {
-  const { data } = await axios.post(
-    'https://d21l5c617zttgr.cloudfront.net/stream_search',
-    { user_prompt: question },
-    {
-      headers: {
-        origin: 'https://d21l5c617zttgr.cloudfront.net',
-        referer: 'https://d21l5c617zttgr.cloudfront.net/',
-        'user-agent': 'Mozilla/5.0',
-      },
-    }
-  );
-
-  const parts = data
-    .split('[/PERPLEXED-SEPARATOR]')
-    .map((p: string) => p.trim())
-    .filter((p: string) => p)
-    .map((p: string) => {
-      try {
-        return JSON.parse(p);
-      } catch {
-        return null;
+  try {
+    const { data } = await axios.post(
+      'https://d21l5c617zttgr.cloudfront.net/stream_search',
+      { user_prompt: question },
+      {
+        headers: {
+          origin: 'https://d21l5c617zttgr.cloudfront.net',
+          referer: 'https://d21l5c617zttgr.cloudfront.net/',
+          'user-agent': 'Mozilla/5.0',
+        },
       }
-    })
-    .filter(Boolean);
+    );
 
-  const result = parts[parts.length - 1];
-  return {
-    answer: result.answer,
-    sources: result.websearch_docs || [],
-  };
+    const parts = data
+      .split('[/PERPLEXED-SEPARATOR]')
+      .map((p: string) => p.trim())
+      .filter((p: string) => p)
+      .map((p: string) => {
+        try {
+          return JSON.parse(p);
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    const result = parts[parts.length - 1];
+    return {
+      answer: result.answer,
+      sources: result.websearch_docs || [],
+    };
+  } catch (error) {
+    console.error("Perplexed API Error:", error);
+    throw new Error(`Failed to call Perplexed API: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function GET(request: NextRequest) {

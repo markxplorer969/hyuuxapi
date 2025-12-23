@@ -1,5 +1,5 @@
 // Firebase Admin SDK configuration for server-side operations
-import admin from 'firebase-admin';
+import * as admin from 'firebase-admin';
 
 // Service account configuration
 const serviceAccount = {

@@ -11,16 +11,6 @@
       "description": "OSS AI text generation.",
       "method": "GET",
       "status": "active",
-      "endpoint": "/api/ai/oss-test",
-      "params": {
-        "text": { "type": "string", "required": true }
-      }
-    },
-    "oss_real": {
-      "name": "OSS (Real)",
-      "description": "OSS AI text generation with Firebase.",
-      "method": "GET",
-      "status": "active",
       "endpoint": "/api/ai/oss",
       "params": {
         "text": { "type": "string", "required": true }

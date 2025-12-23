@@ -26,57 +26,62 @@ async function gradientChat({
   const params: any = { model, clusterMode, messages };
   if (model === "GPT OSS 120B") params.enableThinking = !!enableThinking;
 
-  const response = await fetch("https://chat.gradient.network/api/generate", {
-    method: "POST",
-    headers: {
-      accept: "*/*",
-      "content-type": "application/json",
-      origin: "https://chat.gradient.network",
-      referer: "https://chat.gradient.network/",
-    },
-    body: JSON.stringify(params),
-  });
+  try {
+    const response = await fetch("https://chat.gradient.network/api/generate", {
+      method: "POST",
+      headers: {
+        accept: "*/*",
+        "content-type": "application/json",
+        origin: "https://chat.gradient.network",
+        referer: "https://chat.gradient.network/",
+      },
+      body: JSON.stringify(params),
+    });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const raw = await response.text();
-  const lines = raw.trim().split(/\r?\n/);
-
-  const result = {
-    jobInfo: null as any,
-    clusterInfo: null as any,
-    replies: [] as any[],
-    content: "",
-    blockUpdates: [] as any[],
-  };
-
-  for (const line of lines) {
-    if (!line.trim()) continue;
-
-    let obj;
-    try {
-      obj = JSON.parse(line);
-    } catch {
-      continue;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    switch (obj.type) {
-      case "clusterInfo":
-        result.clusterInfo = obj.data;
-        break;
-      case "reply":
-        result.replies.push(obj.data);
-        result.content += obj.data?.content || "";
-        break;
-      case "blockUpdate":
-        result.blockUpdates.push(...obj.data);
-        break;
-    }
-  }
+    const raw = await response.text();
+    const lines = raw.trim().split(/\r?\n/);
 
-  return result;
+    const result = {
+      jobInfo: null as any,
+      clusterInfo: null as any,
+      replies: [] as any[],
+      content: "",
+      blockUpdates: [] as any[],
+    };
+
+    for (const line of lines) {
+      if (!line.trim()) continue;
+
+      let obj;
+      try {
+        obj = JSON.parse(line);
+      } catch {
+        continue;
+      }
+
+      switch (obj.type) {
+        case "clusterInfo":
+          result.clusterInfo = obj.data;
+          break;
+        case "reply":
+          result.replies.push(obj.data);
+          result.content += obj.data?.content || "";
+          break;
+        case "blockUpdate":
+          result.blockUpdates.push(...obj.data);
+          break;
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Gradient AI API Error:", error);
+    throw new Error(`Failed to call Gradient AI API: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 // ===================================

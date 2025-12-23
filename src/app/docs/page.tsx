@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Terminal, Shield, Check, Info, Server, Globe } from 'lucide-react';
+import { Copy, Terminal, Shield, Check, Info, Server, Globe, ArrowRight, Folder, Bot, Download, Dices, Settings } from 'lucide-react';
 
 export default function DocsPage() {
   const [activeTab, setActiveTab] = useState<"curl" | "js" | "python">("curl");
@@ -182,6 +182,61 @@ print(response.json())`
               <div className="text-sm text-gray-300 font-medium">{status.label}</div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* 6. Browse Categories */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <Folder className="w-6 h-6 text-blue-400" /> Browse Categories
+        </h2>
+        <div className="bg-[#212121] border border-[#2E2E2E] rounded-xl p-6">
+          <p className="text-gray-400 mb-6">
+            Explore our API endpoints organized by category. Find exactly what you need with detailed documentation and examples.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-[#181818] border border-[#2E2E2E] rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Bot className="w-6 h-6 text-purple-400" />
+                <h3 className="font-bold text-white">AI Services</h3>
+              </div>
+              <p className="text-sm text-gray-400 mb-3">OSS, Perplexed, Turboseek AI models</p>
+              <div className="text-xs text-purple-400">3 endpoints</div>
+            </div>
+            <div className="bg-[#181818] border border-[#2E2E2E] rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Download className="w-6 h-6 text-blue-400" />
+                <h3 className="font-bold text-white">Downloader Tools</h3>
+              </div>
+              <p className="text-sm text-gray-400 mb-3">Social media & file downloaders</p>
+              <div className="text-xs text-blue-400">6 endpoints</div>
+            </div>
+            <div className="bg-[#181818] border border-[#2E2E2E] rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Dices className="w-6 h-6 text-green-400" />
+                <h3 className="font-bold text-white">Random Content</h3>
+              </div>
+              <p className="text-sm text-gray-400 mb-3">Random waifu and fun content</p>
+              <div className="text-xs text-green-400">1 endpoint</div>
+            </div>
+            <div className="bg-[#181818] border border-[#2E2E2E] rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Settings className="w-6 h-6 text-orange-400" />
+                <h3 className="font-bold text-white">API Management</h3>
+              </div>
+              <p className="text-sm text-gray-400 mb-3">Status, monitoring & statistics</p>
+              <div className="text-xs text-orange-400">10 endpoints</div>
+            </div>
+          </div>
+          
+          <a
+            href="/docs/category"
+            className="inline-flex items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+          >
+            Browse All Categories
+            <ArrowRight className="w-4 h-4" />
+          </a>
         </div>
       </div>
     </div>

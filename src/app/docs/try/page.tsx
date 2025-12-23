@@ -1,379 +1,362 @@
 'use client';
 
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Play, Plus, Trash2, Copy, Loader2, Code, Terminal } from 'lucide-react';
 
-import {
-  ArrowLeft,
-  Eye,
-  EyeOff,
-  Copy,
-  Check,
-  Play,
-  Loader2,
-  X,
-} from "lucide-react";
+interface Param {
+  key: string;
+  value: string;
+}
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+interface ApiResponse {
+  [key: string]: any;
+}
 
-// Komponen Loading Terpusat
-const CenteredLoader = ({ text = "Loading..." }: { text?: string }) => (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
-        <p className="text-lg text-muted-foreground">{text}</p>
-    </div>
-);
+export default function TryPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // State management
+  const [method, setMethod] = useState<'GET' | 'POST'>('GET');
+  const [url, setUrl] = useState('');
+  const [params, setParams] = useState<Param[]>([]);
+  const [response, setResponse] = useState<ApiResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'curl' | 'node' | 'python'>('curl');
 
-// --- Komponen Sisi Klien Utama ---
-function TryPageContent() {
-  const params = useSearchParams();
-
-  const category = params.get("category") || "";
-  const key = params.get("key") || "";
-
-  const [endpoint, setEndpoint] = useState<any>(null);
-  const [apiKey, setApiKey] = useState("");
-  const [showKey, setShowKey] = useState(false);
-
-  const [inputs, setInputs] = useState<any>({});
-  const [loading, setLoading] = useState(true);
-  const [running, setRunning] = useState(false); // Status terpisah untuk 'Test'
-
-  const [response, setResponse] = useState<any>(null);
-  const [responseType, setResponseType] = useState("none");
-  const [error, setError] = useState("");
-
+  // Initialize from URL params
   useEffect(() => {
-    fetch("/api/endpoints")
-      .then((r) => r.json())
-      .then((d) => {
-        const data = d.result?.[category]?.[key];
-        setEndpoint(data || null);
-
-        if (data?.params) {
-          const initial: any = {};
-          Object.entries(data.params).forEach(([p, def]: [string, any]) => {
-            initial[p] = def.default !== undefined ? String(def.default) : "";
-          });
-          setInputs(initial);
-        }
-
-        setLoading(false);
-      })
-      .catch(() => {
-          setLoading(false);
-          setError("Failed to fetch endpoint metadata.");
-      });
-  }, [category, key]);
-
-  const run = async () => {
-    if (!endpoint) return;
-    if (!apiKey) {
-        setError("API Key is required.");
-        return;
+    const pathParam = searchParams.get('path');
+    const methodParam = searchParams.get('method');
+    
+    if (pathParam) {
+      setUrl(`/api/${pathParam}`);
     }
-
-    setError("");
-    setResponse(null);
-    setResponseType("none");
-    setRunning(true); // Mulai status Running
-
-    const method = Array.isArray(endpoint.method)
-      ? endpoint.method[0]
-      : endpoint.method;
-
-    const urlBase = endpoint.endpoint;
-
-    const query = new URLSearchParams();
-    const body: any = {};
-
-    let hasError = false;
-
-    Object.entries(inputs).forEach(([k, v]) => {
-      const value = String(v ?? ''); 
-      const paramDef = endpoint.params[k];
-      if (!paramDef) return;
-      
-      if (paramDef.required && !value) {
-        setError(`Parameter '${k}' is required.`);
-        hasError = true;
-        return;
-      }
-      
-      if (method === "GET") {
-          if (value) query.append(k, value);
-      } else {
-          // POST: Masukkan nilai ke body.
-          body[k] = value;
-      }
-    });
-
-    if (hasError) {
-        setRunning(false);
-        return;
+    
+    if (methodParam && (methodParam === 'GET' || methodParam === 'POST')) {
+      setMethod(methodParam);
     }
+  }, [searchParams]);
 
-    // Hanya tambahkan API key ke query jika methodnya GET
-    // Jika POST, API key akan dikirimkan melalui header 'x-api-key'
-    if (method === "GET") {
-        query.append("apikey", apiKey);
-    } 
+  // Add parameter
+  const addParameter = () => {
+    setParams([...params, { key: '', value: '' }]);
+  };
 
-    // FINAL URL: Tidak ada query param lain selain yang diizinkan untuk GET
-    const finalURL =
-      method === "GET" ? `${urlBase}?${query.toString()}` : urlBase;
-      
-    try {
-      const res = await fetch(finalURL, {
-        method,
-        headers: {
-            // Penting: Kirim 'x-api-key' di header untuk semua method
-            "x-api-key": apiKey,
-            // Penting: Pastikan Content-Type untuk POST adalah JSON
-            "Content-Type": "application/json", 
-        },
-        body: method === "POST" ? JSON.stringify(body) : undefined,
-      });
+  // Remove parameter
+  const removeParameter = (index: number) => {
+    setParams(params.filter((_, i) => i !== index));
+  };
 
-      // Penanganan error status non-200
-      if (!res.ok) {
-        const type = res.headers.get("content-type") || "";
-        let errorBody = `Status ${res.status}`;
-        
-        // Coba baca body untuk pesan error yang lebih detail
-        try {
-            if (type.includes("application/json")) {
-                const jsonError = await res.json();
-                errorBody += `: ${JSON.stringify(jsonError, null, 2)}`;
-            } else {
-                const textError = await res.text();
-                // Batasi panjang teks HTML/Error untuk menghindari overflow
-                errorBody += `: ${textError.substring(0, 200)}...`; 
-            }
-        } catch (e) {
-            // Jika gagal membaca body, biarkan errorBody tetap status saja
-        }
+  // Update parameter
+  const updateParameter = (index: number, field: 'key' | 'value', value: string) => {
+    const newParams = [...params];
+    newParams[index] = { ...newParams[index], [field]: value };
+    setParams(newParams);
+  };
 
-        setError(`Request failed: ${errorBody}`);
-        return;
-      }
+  // Generate code based on language
+  const generateCode = (lang: 'curl' | 'node' | 'python'): string => {
+    const paramString = params
+      .filter(p => p.key && p.value)
+      .map(p => `${p.key}=${encodeURIComponent(p.value)}`)
+      .join('&');
+    
+    const fullUrl = paramString ? `${url}?${paramString}` : url;
+    const jsonData = params.length > 0 
+      ? JSON.stringify(params.reduce((acc, p) => {
+          if (p.key && p.value) {
+            acc[p.key] = p.value;
+          }
+          return acc;
+        }, {} as Record<string, string>))
+      : '';
 
-      // Penanganan Response Sukses (res.ok)
-      const type = res.headers.get("content-type") || "";
-      if (type.includes("application/json")) {
-        setResponse(await res.json());
-        setResponseType("json");
-      } else if (type.includes("image/")) {
-        setResponse(await res.blob());
-        setResponseType("image");
-      } else {
-        setResponse(await res.text());
-        setResponseType("text");
-      }
-    } catch (err: any) {
-      // Penanganan error network/cors
-      setError(`Network Error: ${err.message}`);
-    } finally {
-      setRunning(false); // Akhiri status Running
+    switch (lang) {
+      case 'curl':
+        return `curl -X ${method} "${fullUrl}" \\
+  -H "Content-Type: application/json"${jsonData ? ' \\\n  -d ' + jsonData + '"' : ''}`;
+
+      case 'node':
+        return `const response = await fetch("${fullUrl}", {
+  method: "${method}",
+  headers: {
+    "Content-Type": "application/json"
+  }${jsonData ? ',\n  body: ' + jsonData : ''}
+});
+
+const data = await response.json();
+console.log(data);`;
+
+      case 'python':
+        return `import requests
+import json
+
+url = "${fullUrl}"
+headers = {"Content-Type": "application/json"}
+
+response = requests.${method.toLowerCase()}(url${jsonData ? ', data=' + jsonData : ''}, headers=headers)
+
+data = response.json()
+print(data)`;
+
+      default:
+        return '';
     }
   };
 
-  // Fungsi untuk menampilkan URL yang sedang dibangun (untuk cURL/kode)
-  const finalUrlDisplay = () => {
-      const urlBase = endpoint.endpoint;
-      const query = new URLSearchParams();
-      
-      Object.entries(inputs).forEach(([k, v]) => {
-        if (!endpoint.params[k]) return;
-        const value = String(v ?? '');
-        if (method === 'GET' && value) query.append(k, value);
-      });
-      
-      // Tambahkan apikey ke URL tampilan jika GET
-      if (method === 'GET' && apiKey) {
-          query.append('apikey', apiKey);
-      }
-      // Tambahkan placeholder apikey jika kosong
-      else if (method === 'GET' && !apiKey) {
-          query.append('apikey', 'YOUR_API_KEY');
-      }
-
-      const queryString = query.toString();
-      
-      return `${urlBase}${queryString ? '?' + queryString : ''}`;
-  }
-
-  // Menampilkan Centered Loader jika Loading Metadata
-  if (loading) return <CenteredLoader text="Fetching endpoint details..." />;
-
-  // Cek jika endpoint tidak ditemukan
-  if (!endpoint) return <div className="p-10 text-center text-lg text-red-500">Endpoint not found. Check category and key parameters.</div>;
-
-  const method = Array.isArray(endpoint.method)
-    ? endpoint.method[0]
-    : endpoint.method;
+  // Execute request
+  const executeRequest = async () => {
+    setIsLoading(true);
+    setResponse(null);
     
-  // --- Tampilan Utama ---
+    try {
+      const paramString = params
+        .filter(p => p.key && p.value)
+        .map(p => `${p.key}=${encodeURIComponent(p.value)}`)
+        .join('&');
+      
+      const fullUrl = paramString ? `${url}?${paramString}` : url;
+      
+      const fetchOptions: RequestInit = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+
+      if (params.length > 0 && method === 'POST') {
+        fetchOptions.body = JSON.stringify(
+          params.reduce((acc, p) => {
+            if (p.key && p.value) {
+              acc[p.key] = p.value;
+            }
+            return acc;
+          }, {} as Record<string, string>)
+        );
+      }
+
+      const res = await fetch(fullUrl, fetchOptions);
+      const data = await res.json();
+      setResponse(data);
+    } catch (error) {
+      setResponse({ error: error instanceof Error ? error.message : 'Unknown error occurred' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Copy code to clipboard
+  const copyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+  };
+
   return (
-    <div className="min-h-screen px-4 pt-8 container max-w-3xl pb-20">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => (window.location.href = "/docs")}
-        className="mb-4"
-      >
-        <ArrowLeft className="w-4 h-4 mr-1" />
-        Back
-      </Button>
+    <div className="min-h-screen bg-[#181818] text-gray-200 font-sans">
+      <div className="max-w-4xl mx-auto px-6 py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">API Playground</h1>
+          <p className="text-gray-400">Test API endpoints with custom parameters</p>
+        </div>
 
-      <h1 className="text-3xl font-bold">{endpoint.name}</h1>
-      <p className="text-muted-foreground">{endpoint.description}</p>
+        {/* Section A: Endpoint Config */}
+        <div className="bg-[#212121] border border-[#2E2E2E] rounded-lg p-6 mb-6">
+          <div className="space-y-4">
+            {/* Method Selector */}
+            <div>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-2">
+                Method
+              </label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setMethod('GET')}
+                  className={`px-4 py-2 rounded-md border transition-all ${
+                    method === 'GET'
+                      ? 'bg-[#0a0a0a] border-white text-white'
+                      : 'bg-[#212121] border-[#333] text-gray-400 hover:bg-white hover:text-black'
+                  }`}
+                >
+                  GET
+                </button>
+                <button
+                  onClick={() => setMethod('POST')}
+                  className={`px-4 py-2 rounded-md border transition-all ${
+                    method === 'POST'
+                      ? 'bg-[#0a0a0a] border-white text-white'
+                      : 'bg-[#212121] border-[#333] text-gray-400 hover:bg-white hover:text-black'
+                  }`}
+                >
+                  POST
+                </button>
+              </div>
+            </div>
 
-      <div className="mt-3 flex items-center gap-2">
-        <Badge>{method}</Badge>
-        <code className="text-sm text-muted-foreground break-all">
-          {finalUrlDisplay()}
-        </code>
-      </div>
+            {/* URL Input */}
+            <div>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-2">
+                Endpoint URL
+              </label>
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="/api/example/endpoint"
+                className="w-full bg-[#0a0a0a] border border-[#333] text-white rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
 
-      {/* API KEY */}
-      <div className="mt-8">
-        <p className="font-semibold mb-1">API Key *</p>
-        <div className="relative">
-          <Input
-            type={showKey ? "text" : "password"}
-            placeholder="Your API key..."
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-          />
+        {/* Section B: Parameters */}
+        <div className="bg-[#212121] border border-[#2E2E2E] rounded-lg p-6 mb-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">Parameters</h2>
+              <button
+                onClick={addParameter}
+                className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#444] text-gray-400 hover:border-[#666] hover:text-white transition-all rounded-md text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                Add Parameter
+              </button>
+            </div>
+
+            {/* Parameter List */}
+            <div className="space-y-3">
+              {params.map((param, index) => (
+                <div key={index} className="flex gap-3">
+                  <input
+                    type="text"
+                    value={param.key}
+                    onChange={(e) => updateParameter(index, 'key', e.target.value)}
+                    placeholder="Parameter name"
+                    className="flex-1 bg-[#0a0a0a] border border-[#333] text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="text"
+                    value={param.value}
+                    onChange={(e) => updateParameter(index, 'value', e.target.value)}
+                    placeholder="Parameter value"
+                    className="flex-1 bg-[#0a0a0a] border border-[#333] text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    onClick={() => removeParameter(index)}
+                    className="p-2 text-gray-400 hover:text-red-400 transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              
+              {params.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No parameters added. Click "Add Parameter" to get started.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Section C: Action */}
+        <div className="text-center mb-6">
           <button
-            onClick={() => setShowKey(!showKey)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground"
+            onClick={executeRequest}
+            disabled={isLoading || !url}
+            className="flex items-center justify-center gap-2 w-full bg-[#212121] border border-[#2E2E2E] hover:bg-white hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-lg px-6 py-4 text-white font-medium"
           >
-            {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {isLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Executing...</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-5 h-5" />
+                <span>Run Request</span>
+              </>
+            )}
           </button>
         </div>
-      </div>
 
-      {/* PARAMS */}
-      <div className="mt-8">
-        <p className="font-semibold mb-3">{method === 'GET' ? 'Query Parameters' : 'Body Parameters'}</p>
-
-        <div className="space-y-4">
-          {Object.entries(endpoint.params || {}).map(([p, def]: any) => (
-            <div key={p}>
-              <p className="mb-1 font-medium">
-                {p} {def.required && "*"}
-              </p>
-              <Input
-                placeholder={`Enter ${p}... (${def.type})`}
-                value={inputs[p]}
-                onChange={(e) =>
-                  setInputs({ ...inputs, [p]: e.target.value })
-                }
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                {def.type} {def.default !== undefined ? `(Default: ${String(def.default)})` : ''}
-              </p>
+        {/* Section D: Code & Response */}
+        {(url || response) && (
+          <div className="bg-[#212121] border border-[#2E2E2E] rounded-lg overflow-hidden">
+            {/* Tab Header */}
+            <div className="flex border-b border-[#2E2E2E]">
+              {(['curl', 'node', 'python'] as const).map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => setActiveTab(lang)}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition-all ${
+                    activeTab === lang
+                      ? 'bg-[#0a0a0a] text-white border-b-2 border-white'
+                      : 'bg-[#181818] text-gray-400 hover:text-gray-300 hover:bg-[#1f1f1f]'
+                  }`}
+                >
+                  {lang === 'curl' && (
+                    <div className="flex items-center justify-center gap-2">
+                      <Terminal className="w-4 h-4" />
+                      cURL
+                    </div>
+                  )}
+                  {lang === 'node' && (
+                    <div className="flex items-center justify-center gap-2">
+                      <Code className="w-4 h-4" />
+                      Node.js
+                    </div>
+                  )}
+                  {lang === 'python' && (
+                    <div className="flex items-center justify-center gap-2">
+                      <Terminal className="w-4 h-4" />
+                      Python
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <div className="flex gap-3 mt-5">
-          <Button onClick={run} disabled={running}>
-            {running ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-            {running ? 'Running...' : 'Test'}
-          </Button>
+            <div className="grid grid-cols-1 lg:grid-cols-2">
+              {/* Code Block */}
+              <div className="bg-[#0a0a0a] p-6 border-r border-[#2E2E2E]">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs text-gray-500 uppercase font-bold">Code</span>
+                  <button
+                    onClick={() => copyCode(generateCode(activeTab))}
+                    className="text-gray-400 hover:text-white transition-all"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+                <pre className="text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap font-mono">
+                  {generateCode(activeTab)}
+                </pre>
+              </div>
 
-          <Button
-            variant="outline"
-            onClick={() => {
-              const cleared: any = {};
-              Object.entries(endpoint.params || {}).forEach(([k, def]: [string, any]) => {
-                  cleared[k] = def.default !== undefined ? String(def.default) : "";
-              });
-              setInputs(cleared);
-              setResponse(null);
-              setError("");
-              setResponseType("none");
-            }}
-          >
-            Clear
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            onClick={async () => {
-                const url = finalUrlDisplay();
-                let curl = `curl -X ${method} "${url}" \\
-  -H "x-api-key: ${apiKey || 'YOUR_API_KEY'}"`;
-
-                if (method === 'POST') {
-                    curl += ` \\
-  -H "Content-Type: application/json" \\
-  -d '${JSON.stringify(inputs)}'`;
-                }
-
-                await navigator.clipboard.writeText(curl);
-            }}
-          >
-            <Copy className="w-4 h-4 mr-1" />
-            Copy cURL
-          </Button>
-        </div>
-      </div>
-
-      {/* RESPONSE */}
-      <div className="mt-10">
-        <div className="flex items-center justify-between mb-2">
-            <p className="font-semibold">Response</p>
-            <Badge variant="secondary" className="text-xs">
-                {responseType.toUpperCase()}
-            </Badge>
-        </div>
-
-        <div className="bg-black/90 text-white rounded-lg p-4 max-h-[400px] overflow-auto relative">
-          {error && (
-            <p className="text-red-400 whitespace-pre-wrap">{error}</p>
-          )}
-
-          {!response && !error && (
-            <p className="text-muted-foreground">No response yet.</p>
-          )}
-
-          {response && responseType === "json" && (
-            <pre className="whitespace-pre-wrap text-sm">
-              {JSON.stringify(response, null, 2)}
-            </pre>
-          )}
-
-          {response && responseType === "text" && (
-            <pre className="whitespace-pre-wrap text-sm">{response}</pre>
-          )}
-
-          {response && responseType === "image" && (
-            <div className="w-full h-full flex items-center justify-center">
-                <img
-                src={URL.createObjectURL(response)}
-                className="max-w-full max-h-[360px] object-contain rounded-md"
-                alt="API Response Image"
-                />
+              {/* Response Block */}
+              <div className="bg-[#0a0a0a] p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs text-gray-500 uppercase font-bold">Response</span>
+                </div>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+                  </div>
+                ) : response ? (
+                  <pre className="text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap font-mono">
+                    {JSON.stringify(response, null, 2)}
+                  </pre>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    Execute a request to see the response
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
-
-// --- Komponen Pembungkus Suspense ---
-export default function TryPage() {
-    return (
-        <Suspense fallback={<CenteredLoader text="Loading page components..." />}>
-            <TryPageContent />
-        </Suspense>
-    );
 }
